@@ -1,0 +1,1300 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ece4d6">
+<meta name="description" content="My personal shelf of movies, series and natok I have watched.">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="MovieShelf">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>MovieShelf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600&family=Hind+Siliguri:wght@400;500;600&family=Lato:wght@400;700&display=swap">
+<style>
+/* Layout: a wall of wooden cabinet bays; each bay is one shelf of DVD spines that scrolls sideways. Bottom tab bar; details open as full-screen sheets. */
+:root{
+  --wall:#ece4d6; --wall-2:#f5efe4; --cab:#cdbb9c; --cab-top:#b9a382;
+  --wood-hi:#dcae72; --wood:#b98546; --wood-lo:#7c5127;
+  --ink:#2b2118; --ink-2:#6c5c4a; --panel:#fbf8f2; --panel-2:#f0e9dd; --line:#ddd0bc;
+  --accent:#1f6f78; --on-accent:#ffffff; --shadow:rgba(50,30,10,.35); --glow:rgba(255,255,255,.35); --star:#d99a00;
+  --imdb:#f5c518; --imdb-ink:#111; --danger:#c0392b;
+  --f-spine:'Oswald','Hind Siliguri',Impact,'Arial Narrow',sans-serif;
+  --f-ui:'Lato','Hind Siliguri',system-ui,-apple-system,sans-serif;
+  --z:1;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --wall:#160b0d; --wall-2:#3b0f17; --cab:#0b0506; --cab-top:#1c0b0e;
+    --wood-hi:#7a4430; --wood:#4e281b; --wood-lo:#26120b;
+    --ink:#f5ebe1; --ink-2:#bda898; --panel:#1c1112; --panel-2:#2b1a1b; --line:#3d2829;
+    --accent:#e4b24c; --on-accent:#1d1206; --shadow:rgba(0,0,0,.6); --glow:rgba(228,178,76,.25); --star:#f0c040;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --wall:#160b0d; --wall-2:#3b0f17; --cab:#0b0506; --cab-top:#1c0b0e;
+  --wood-hi:#7a4430; --wood:#4e281b; --wood-lo:#26120b;
+  --ink:#f5ebe1; --ink-2:#bda898; --panel:#1c1112; --panel-2:#2b1a1b; --line:#3d2829;
+  --accent:#e4b24c; --on-accent:#1d1206; --shadow:rgba(0,0,0,.6); --glow:rgba(228,178,76,.25); --star:#f0c040;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{background:var(--wall);background-image:radial-gradient(140% 50% at 50% 0%,var(--wall-2),var(--wall) 70%);background-attachment:fixed;color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+body.locked{overflow:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--wall)}
+button{font:inherit;color:inherit}
+button,label.btn,[data-act]{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+svg.i{width:22px;height:22px;flex:none}
+
+/* ---------- top bar ---------- */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--wall);padding-block:10px 8px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));border-bottom:1px solid var(--line);display:grid;gap:10px}
+.brand-row{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.brand{font-family:var(--f-spine);font-weight:600;font-size:26px;letter-spacing:.14em;line-height:1;margin:0;text-transform:uppercase}
+.brand b{color:var(--accent);font-weight:600}
+.tally{font-size:12px;color:var(--ink-2);text-align:right;font-variant-numeric:tabular-nums;line-height:1.3}
+.tally strong{color:var(--ink);font-size:14px}
+.toolrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.seg{display:inline-flex;background:var(--panel-2);border:1px solid var(--line);border-radius:999px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;padding:6px 12px;border-radius:999px;font-size:13px;font-weight:700;color:var(--ink-2);white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
+.seg.sm button{padding:5px 10px;font-size:12px}
+.zoom{display:inline-flex;align-items:center;gap:4px;margin-left:auto}
+.zoom input{width:84px;accent-color:var(--accent)}
+.iconbtn{border:1px solid var(--line);background:var(--panel-2);border-radius:999px;width:34px;height:34px;display:inline-grid;place-items:center;padding:0}
+.iconbtn svg{width:18px;height:18px}
+.scroll-x{overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;max-width:100%}
+.scroll-x::-webkit-scrollbar{display:none}
+
+/* ---------- shelves ---------- */
+main{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+.view{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px 8px}
+#shelves{touch-action:pan-x pan-y;display:grid;gap:22px;grid-template-columns:minmax(0,1fr)}
+.stack{display:grid;gap:16px;grid-template-columns:minmax(0,1fr)}
+.banner{display:flex;gap:10px;align-items:center;justify-content:space-between;background:var(--panel);border:1px dashed var(--line);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--ink-2)}
+.banner button{flex:none}
+.shelf-head{display:flex;align-items:baseline;gap:8px;margin:0 2px 6px}
+.shelf-head h2{font-family:var(--f-spine);font-weight:500;font-size:15px;letter-spacing:.12em;text-transform:uppercase;margin:0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.shelf-head .n{font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.shelf-head .more{margin-left:auto;border:0;background:none;color:var(--accent);font-weight:700;font-size:13px;padding:2px 0;white-space:nowrap}
+.bay{position:relative;border-radius:5px 5px 0 0;background:linear-gradient(var(--cab-top),var(--cab) 40%);box-shadow:inset 0 16px 20px -12px var(--shadow),inset 12px 0 16px -14px var(--shadow),inset -12px 0 16px -14px var(--shadow)}
+.row{display:flex;align-items:flex-end;gap:3px;overflow-x:auto;padding:16px 14px 0;scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+.row::-webkit-scrollbar{display:none}
+.row::after{content:"";flex:0 0 10px}
+.plank{height:16px;border-radius:0 0 3px 3px;background:repeating-linear-gradient(90deg,rgba(0,0,0,.05) 0 2px,transparent 2px 11px),linear-gradient(var(--wood-hi),var(--wood) 45%,var(--wood-lo));box-shadow:inset 0 1px 0 var(--glow),0 10px 14px -8px var(--shadow)}
+
+/* DVD spine */
+.dvd{flex:0 0 auto;position:relative;width:calc(38px*var(--z));height:calc(206px*var(--z));border:0;margin:0;padding:calc(9px*var(--z)) 0 calc(7px*var(--z));border-radius:3px 3px 1px 1px;color:var(--t);font-family:var(--f-spine);display:flex;flex-direction:column;align-items:center;gap:calc(6px*var(--z));
+  background:linear-gradient(90deg,rgba(255,255,255,.22),rgba(255,255,255,0) 16%,rgba(0,0,0,0) 78%,rgba(0,0,0,.3)),var(--c);
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.2),0 -1px 0 rgba(255,255,255,.12) inset;transition:transform .22s cubic-bezier(.3,.7,.3,1.2)}
+.dvd-brand{font-size:calc(8.5px*var(--z));font-weight:600;letter-spacing:.1em;writing-mode:vertical-rl;opacity:.85}
+.dvd-title{flex:1 1 auto;min-height:0;writing-mode:vertical-rl;text-orientation:mixed;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:calc(var(--fs)*var(--z));font-weight:500;letter-spacing:.04em;line-height:1}
+.dvd-year{font-size:calc(9.5px*var(--z));font-weight:500;letter-spacing:.02em;font-variant-numeric:tabular-nums;opacity:.9}
+.dvd-fav{font-size:calc(10px*var(--z));line-height:1;color:var(--t);font-family:var(--f-ui)}
+.dvd-flag{position:absolute;bottom:calc(26px*var(--z));left:50%;width:calc(16px*var(--z));height:calc(16px*var(--z));transform:translateX(-50%);border-radius:50%;background:#fff3b0;box-shadow:0 0 0 1px rgba(0,0,0,.25);display:grid;place-items:center;font-size:calc(8px*var(--z));color:#3a2a00;font-family:var(--f-ui);font-weight:700}
+.dvd.s1 .dvd-brand{background:var(--t);color:var(--c);writing-mode:horizontal-tb;width:100%;text-align:center;padding:calc(3px*var(--z)) 0;margin-top:calc(-9px*var(--z));opacity:1}
+.dvd.s2{background:linear-gradient(90deg,rgba(255,255,255,.12),transparent 16%,transparent 78%,rgba(0,0,0,.35)),linear-gradient(90deg,var(--c) 0 22%,#16151a 22% 78%,var(--c) 78%);color:#f4f1ea}
+.dvd.s2 .dvd-fav{color:#f4f1ea}
+.dvd:hover{transform:translateY(-5px)}
+.dvd.pull{transform:translateY(calc(-26px*var(--z))) rotate(-3deg)}
+.dvd.empty-slot{background:transparent;box-shadow:inset 0 0 0 1px var(--line);opacity:.4;pointer-events:none}
+
+/* cover mode */
+.cov{flex:0 0 auto;position:relative;width:calc(104px*var(--z));aspect-ratio:2/3;max-width:100%;border:0;padding:0;border-radius:2px 4px 4px 2px;overflow:hidden;box-shadow:0 4px 10px -4px var(--shadow);transition:transform .22s}
+.cov::before{content:"";position:absolute;inset:0 auto 0 0;width:7%;background:linear-gradient(90deg,rgba(0,0,0,.45),rgba(255,255,255,.18) 60%,rgba(0,0,0,.2));z-index:2}
+.cov.pull,.cov:hover{transform:translateY(-6px)}
+
+/* poster (image or designed fallback) */
+.pst{position:absolute;inset:0;background:var(--c);overflow:hidden}
+.pst img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
+.pst-fb{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:10% 9%;color:var(--t);text-align:left;
+  background:radial-gradient(120% 70% at 85% 10%,rgba(255,255,255,.28),transparent 55%),linear-gradient(165deg,var(--c),var(--c2))}
+.pst-fb .k{font-family:var(--f-spine);font-size:9px;letter-spacing:.16em;opacity:.8}
+.pst-fb .tt{font-family:var(--f-spine);font-weight:600;text-transform:uppercase;line-height:1.02;font-size:calc(15px*var(--pf,1));letter-spacing:.02em;overflow-wrap:break-word;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+.pst-fb .yy{font-family:var(--f-spine);font-size:11px;opacity:.85}
+.lg .pst-fb .tt{font-size:calc(22px*var(--pf,1))}
+.lg .pst-fb .k{font-size:11px}
+
+/* empty state */
+.empty{display:grid;gap:14px;text-align:center;padding:28px 6px}
+.empty h2{font-family:var(--f-spine);letter-spacing:.1em;text-transform:uppercase;margin:0;font-weight:500}
+.empty p{margin:0;color:var(--ink-2)}
+.empty .bay .row{justify-content:center;pointer-events:none}
+
+/* ---------- bottom nav ---------- */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--panel);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);align-items:end;padding-top:6px;padding-bottom:calc(6px + env(safe-area-inset-bottom,0px));padding-left:max(6px,env(safe-area-inset-left,0px));padding-right:max(6px,env(safe-area-inset-right,0px))}
+.nav button{border:0;background:none;display:grid;justify-items:center;gap:2px;font-size:11px;font-weight:700;color:var(--ink-2);padding:4px 0}
+.nav button[aria-current="page"]{color:var(--accent)}
+.nav .add{width:52px;height:52px;border-radius:50%;background:var(--accent);color:var(--on-accent);margin:-22px auto 0;box-shadow:0 6px 16px -6px var(--shadow);display:grid;place-items:center}
+.nav .add svg{width:26px;height:26px}
+
+/* ---------- sheets ---------- */
+#sheets{position:relative;z-index:30}
+.sheet{position:fixed;inset:0;background:var(--panel);overflow-y:auto;overscroll-behavior:contain;transform:translateY(100%);transition:transform .26s cubic-bezier(.2,.8,.2,1);padding-bottom:calc(28px + env(safe-area-inset-bottom,0px))}
+.sheet.open{transform:none}
+.sh-bar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:8px;background:var(--panel);border-bottom:1px solid var(--line);padding-top:calc(8px + env(safe-area-inset-top,0px));padding-bottom:8px;padding-left:max(10px,env(safe-area-inset-left,0px));padding-right:max(10px,env(safe-area-inset-right,0px))}
+.sh-bar h2{flex:1;margin:0;font-size:16px;font-weight:700;text-align:center;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sh-bar .bk{border:0;background:none;display:inline-flex;align-items:center;gap:2px;color:var(--accent);font-weight:700;padding:6px 4px;min-width:64px}
+.sh-bar .rt{min-width:64px;display:flex;justify-content:flex-end}
+.sh-body{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px;display:grid;gap:18px;grid-template-columns:minmax(0,1fr);max-width:760px;margin:0 auto}
+
+/* detail */
+.d-hero{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:end;padding:18px 16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:linear-gradient(180deg,var(--c) -40%,var(--panel) 100%)}
+.d-poster{position:relative;width:118px;aspect-ratio:2/3;max-width:100%;border-radius:4px;overflow:hidden;box-shadow:0 12px 24px -10px var(--shadow)}
+.d-head{min-width:0;display:grid;gap:6px}
+.d-kicker{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
+.d-head h1{margin:0;font-family:var(--f-spine);font-weight:600;font-size:26px;line-height:1.08;letter-spacing:.01em;text-wrap:balance;overflow-wrap:anywhere}
+.d-orig{font-size:13px;color:var(--ink-2)}
+.d-meta{font-size:13px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.badges{display:flex;gap:6px;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;gap:5px;border-radius:5px;padding:2px 7px;font-weight:700;font-size:13px;font-variant-numeric:tabular-nums;background:var(--panel-2);border:1px solid var(--line)}
+.badge.imdb{background:var(--imdb);color:var(--imdb-ink);border-color:transparent}
+.badge.imdb i{font-style:normal;font-family:var(--f-spine);letter-spacing:.02em}
+.d-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.act{border:1px solid var(--line);background:var(--panel-2);border-radius:12px;padding:9px 4px;display:grid;justify-items:center;gap:3px;font-size:12px;font-weight:700;color:var(--ink-2);text-align:center}
+.act svg{width:22px;height:22px}
+.act.on{color:var(--accent);border-color:var(--accent)}
+.blk h3{margin:0 0 8px;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
+.blk p{margin:0}
+.stars{display:flex;gap:2px;align-items:center;flex-wrap:wrap}
+.stars button{border:0;background:none;padding:2px;font-size:22px;line-height:1;color:var(--line)}
+.stars button.on{color:var(--star)}
+.stars .val{margin-left:8px;font-weight:700;font-variant-numeric:tabular-nums}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--panel-2);border-radius:999px;padding:5px 11px;font-size:13px;font-weight:700;color:var(--ink)}
+.chip.ac{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.chip small{font-weight:400;color:var(--ink-2);margin-left:3px}
+.note{width:100%;min-height:96px;resize:vertical;border:1px solid var(--line);background:var(--panel-2);color:var(--ink);border-radius:10px;padding:10px;font:inherit}
+.hist{display:flex;flex-wrap:wrap;gap:6px;font-size:13px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--accent);background:var(--accent);color:var(--on-accent);border-radius:10px;padding:9px 14px;font-weight:700;font-size:14px;text-decoration:none}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn.plain{background:var(--panel-2);border-color:var(--line);color:var(--ink)}
+.btn.danger{background:transparent;border-color:var(--danger);color:var(--danger)}
+.btn.danger.armed{background:var(--danger);color:#fff}
+.btn svg{width:18px;height:18px}
+.btn[disabled]{opacity:.5}
+
+/* grids & lists */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:14px 10px}
+.gcell{border:0;background:none;padding:0;text-align:left;display:grid;gap:5px;min-width:0}
+.gcell .cv{position:relative;aspect-ratio:2/3;max-width:100%;border-radius:3px;overflow:hidden;box-shadow:0 4px 10px -5px var(--shadow)}
+.gcell .cap{font-size:12px;font-weight:700;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gcell .sub{font-size:11px;color:var(--ink-2);margin-top:-4px}
+.list{display:grid;gap:2px}
+.li{display:grid;grid-template-columns:46px 1fr auto;gap:12px;align-items:center;border:0;background:none;text-align:left;padding:8px 4px;border-bottom:1px solid var(--line);min-width:0}
+.li .cv{position:relative;width:46px;aspect-ratio:2/3;border-radius:3px;overflow:hidden}
+.li .cv .pst-fb{padding:6px 4px}
+.li .cv .pst-fb .tt{font-size:8px;-webkit-line-clamp:4}
+.li .cv .pst-fb .k,.li .cv .pst-fb .yy{display:none}
+.li .t{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.li .s{font-size:12px;color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.li > div{min-width:0}
+.li .r{font-size:12px;font-weight:700;color:var(--ink-2);font-variant-numeric:tabular-nums;text-align:right}
+
+/* search */
+.search{position:relative}
+.search input{width:100%;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:12px;padding:12px 14px 12px 42px;font:inherit;font-size:16px}
+.search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--ink-2);width:20px;height:20px}
+.sec-title{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);margin:0 0 8px}
+.hint{font-size:13px;color:var(--ink-2);margin:0}
+
+/* forms */
+.form{display:grid;gap:12px}
+.fld{display:grid;gap:4px;min-width:0}
+.fld > span{font-size:12px;font-weight:700;color:var(--ink-2);letter-spacing:.04em}
+.fld input,.fld select,.fld textarea{width:100%;border:1px solid var(--line);background:var(--panel-2);color:var(--ink);border-radius:9px;padding:9px 10px;font:inherit;font-size:16px;min-width:0}
+.fld textarea{min-height:84px;resize:vertical}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.f-photo{display:grid;grid-template-columns:96px 1fr;gap:14px;align-items:center}
+.f-pv{position:relative;width:96px;aspect-ratio:2/3;border-radius:4px;overflow:hidden;box-shadow:0 6px 14px -8px var(--shadow)}
+.f-photo .btns{display:grid;gap:8px;justify-items:start}
+.colorlbl{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--ink-2)}
+.colorlbl input{width:40px;height:30px;border:1px solid var(--line);border-radius:6px;padding:0;background:none}
+.check{display:flex;gap:8px;align-items:center;font-weight:700}
+.check input{width:20px;height:20px;accent-color:var(--accent)}
+.tabs{display:flex;gap:6px}
+.res-pick{display:grid;gap:14px;border:1px solid var(--line);border-radius:14px;padding:14px;background:var(--panel-2)}
+.res-pick .top2{display:grid;grid-template-columns:72px 1fr;gap:12px;align-items:center}
+.res-pick .cv{position:relative;width:72px;aspect-ratio:2/3;border-radius:3px;overflow:hidden}
+.card{border:1px solid var(--line);border-radius:14px;padding:14px;background:var(--panel-2);display:grid;gap:10px}
+.card ol{margin:0;padding-left:20px;display:grid;gap:4px}
+.spinner{width:22px;height:22px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--accent);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading{display:flex;gap:10px;align-items:center;color:var(--ink-2);font-size:14px}
+
+/* stats */
+.tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px}
+.tile b{display:block;font-family:var(--f-spine);font-weight:500;font-size:30px;line-height:1.1;font-variant-numeric:tabular-nums}
+.tile span{font-size:12px;color:var(--ink-2);font-weight:700}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;display:grid;gap:10px}
+.panel h3{margin:0;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
+.vbars{display:flex;align-items:flex-end;gap:8px;height:150px;padding-top:18px;border-bottom:1px solid var(--line);background:repeating-linear-gradient(0deg,var(--line) 0 1px,transparent 1px 37px);background-position:bottom}
+.vbar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;min-width:0;position:relative}
+.vbar i{display:block;width:70%;max-width:34px;background:var(--accent);border-radius:4px 4px 0 0;min-height:2px}
+.vbar em{position:absolute;font-style:normal;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums}
+.vlabels{display:flex;gap:8px}
+.vlabels span{flex:1;text-align:center;font-size:11px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.hbars{display:grid;gap:7px}
+.hb{display:grid;grid-template-columns:minmax(0,9.5em) 1fr 2em;gap:8px;align-items:center;font-size:13px;border:0;background:none;padding:0;text-align:left;width:100%}
+.hb span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hb .tr{height:10px;background:var(--panel-2);border-radius:5px;overflow:hidden}
+.hb .tr i{display:block;height:100%;background:var(--accent);border-radius:5px}
+.hb b{text-align:right;font-variant-numeric:tabular-nums}
+
+/* settings */
+.themes{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.th{border:2px solid var(--line);border-radius:12px;padding:0;overflow:hidden;background:var(--panel);text-align:left}
+.th[aria-pressed="true"]{border-color:var(--accent)}
+.th .mini{height:64px;display:flex;flex-direction:column;justify-content:flex-end;padding:10px 10px 0}
+.th .mini .sp{display:flex;gap:2px;align-items:flex-end;height:38px;padding:0 6px}
+.th .mini .sp i{width:9px;border-radius:1px}
+.th .mini .pl{height:6px;border-radius:0 0 2px 2px}
+.th .nm{display:block;padding:7px 10px;font-size:13px;font-weight:700}
+.th .nm small{font-weight:400;color:var(--ink-2)}
+.fonts{display:grid;gap:6px}
+.fo{display:flex;justify-content:space-between;gap:10px;align-items:center;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:10px 12px;text-align:left}
+.fo[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.fo .smp{font-size:16px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fo .nm{font-size:12px;color:var(--ink-2);font-family:var(--f-ui);flex:none}
+.arr{display:grid;gap:4px}
+.arr-row{display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:center;padding:8px 6px;border-bottom:1px solid var(--line)}
+.arr-row input{width:20px;height:20px;accent-color:var(--accent)}
+.arr-row label{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
+.arr-row label small{font-weight:400;color:var(--ink-2)}
+.arr-row.off label{color:var(--ink-2);font-weight:400}
+
+.addrow{display:flex;gap:8px;align-items:center}
+.addrow input{flex:1;min-width:0;border:1px solid var(--line);background:var(--panel-2);color:var(--ink);border-radius:9px;padding:9px 10px;font:inherit;font-size:16px}
+.newin{margin-top:6px}
+.mg-list{display:grid}
+.mg-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;gap:8px;align-items:center;padding:9px 2px;border-bottom:1px solid var(--line)}
+.mg-row .nm{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mg-row .n{font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.mg-row.wide{grid-template-columns:minmax(0,1fr)}
+.mg-ask{display:grid;gap:8px;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:10px}
+.mg-ask select{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:8px;font:inherit;font-size:16px;max-width:100%}
+.toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;background:var(--ink);color:var(--panel);padding:10px 16px;border-radius:999px;font-size:14px;font-weight:700;z-index:60;transition:.25s;pointer-events:none;max-width:calc(100% - 32px);text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media (min-width:700px){ .d-poster{width:160px} .d-head h1{font-size:34px} .tiles{grid-template-columns:repeat(4,1fr)} .themes{grid-template-columns:repeat(4,1fr)} }
+@media (prefers-reduced-motion: reduce){ *{transition:none!important;animation:none!important} }
+</style>
+</head>
+<body>
+<header class="top" id="top">
+  <div class="brand-row">
+    <h1 class="brand">Movie<b>Shelf</b></h1>
+    <div class="tally" id="tally"></div>
+  </div>
+  <div class="toolrow" id="homeTools">
+    <div class="scroll-x"><div class="seg" id="filterSeg" role="group" aria-label="Show">
+    </div></div>
+  </div>
+  <div class="toolrow" id="homeTools2">
+    <div class="seg sm" id="modeSeg" role="group" aria-label="Look">
+      <button data-act="mode" data-m="spine" aria-pressed="true">Spines</button>
+      <button data-act="mode" data-m="cover" aria-pressed="false">Covers</button>
+    </div>
+    <div class="zoom">
+      <button class="iconbtn" data-act="zoom" data-d="-1" aria-label="Smaller"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 12h12"/></svg></button>
+      <input type="range" id="zoomRange" min="0.6" max="1.7" step="0.05" value="1" aria-label="Shelf size">
+      <button class="iconbtn" data-act="zoom" data-d="1" aria-label="Bigger"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 12h12M12 6v12"/></svg></button>
+      <button class="iconbtn" data-act="arrange" aria-label="Arrange shelves"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/><path d="M8 4v4M15 10v4M10 16v4"/></svg></button>
+    </div>
+  </div>
+</header>
+<main>
+  <section class="view" id="view-home"><div id="shelves"></div></section>
+  <section class="view" id="view-search" hidden></section>
+  <section class="view" id="view-stats" hidden></section>
+  <section class="view" id="view-settings" hidden></section>
+</main>
+<nav class="nav" aria-label="Main">
+  <button data-act="nav" data-view="home" aria-current="page"><svg class="i" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="4" width="3.4" height="15" rx=".6"/><rect x="7.6" y="6" width="3.4" height="13" rx=".6"/><rect x="12.2" y="5" width="3.4" height="14" rx=".6"/><path d="M17 6.3l3-.8 3 13.2-3 .7z" transform="translate(-1.6 0)"/><rect x="2" y="19.6" width="20" height="1.8" rx=".5"/></svg>Shelf</button>
+  <button data-act="nav" data-view="search"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L20 20"/></svg>Search</button>
+  <button data-act="add" aria-label="Add a title"><span class="add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></button>
+  <button data-act="nav" data-view="stats"><svg class="i" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="11" width="3.5" height="9" rx="1"/><rect x="10.25" y="5" width="3.5" height="15" rx="1"/><rect x="16.5" y="8" width="3.5" height="12" rx="1"/></svg>Stats</button>
+  <button data-act="nav" data-view="settings"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h9M18 7h2M4 17h3M12 17h8"/><circle cx="15.5" cy="7" r="2.3"/><circle cx="9.5" cy="17" r="2.3"/></svg>Settings</button>
+</nav>
+<div id="sheets"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<input type="file" id="restoreFile" accept=".json,application/json" class="vh">
+
+<script>
+(() => {
+'use strict';
+const APP_VERSION = '1.1.0';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let FRAMED = true; try { FRAMED = window.self !== window.top; } catch (e) { FRAMED = true; }
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem('ms_' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('ms_' + k, JSON.stringify(v)); } catch (e) {} }
+};
+const THIS_YEAR = new Date().getFullYear();
+const today = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); };
+
+/* ---------------- storage (IndexedDB, memory fallback) ---------------- */
+const DB = {
+  db: null,
+  open() {
+    return new Promise(res => {
+      let done = false; const fin = v => { if (!done) { done = true; this.db = v; res(); } };
+      setTimeout(() => fin(null), 1500);
+      try {
+        const r = indexedDB.open('movieshelf', 1);
+        r.onupgradeneeded = () => r.result.createObjectStore('items', { keyPath: 'id' });
+        r.onsuccess = () => fin(r.result); r.onerror = () => fin(null); r.onblocked = () => fin(null);
+      } catch (e) { fin(null); }
+    });
+  },
+  all() {
+    if (!this.db) return Promise.resolve([]);
+    return new Promise(res => { try { const q = this.db.transaction('items').objectStore('items').getAll(); q.onsuccess = () => res(q.result || []); q.onerror = () => res([]); } catch (e) { res([]); } });
+  },
+  tx(fn) {
+    if (!this.db) return Promise.resolve();
+    return new Promise(res => { try { const t = this.db.transaction('items', 'readwrite'); fn(t.objectStore('items')); t.oncomplete = res; t.onerror = res; t.onabort = res; } catch (e) { res(); } });
+  },
+  put(it) { return this.tx(s => s.put(it)); },
+  putMany(list) { return this.tx(s => list.forEach(it => s.put(it))); },
+  del(id) { return this.tx(s => s.delete(id)); },
+  clear() { return this.tx(s => s.clear()); }
+};
+let ITEMS = [];
+const byId = id => ITEMS.find(i => i.id === id);
+const newId = () => 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+async function saveItem(it) { if (it.lang && typeof LANGS !== 'undefined' && !LANGS[it.lang] && S.langs) { S.langs.push({ key: it.lang, label: langName(it.lang) }); saveLists(); } it.updatedAt = Date.now(); const k = ITEMS.findIndex(x => x.id === it.id); if (k >= 0) ITEMS[k] = it; else ITEMS.push(it); await DB.put(it); }
+async function removeItem(id) { ITEMS = ITEMS.filter(x => x.id !== id); await DB.del(id); }
+
+/* ---------------- labels ---------------- */
+const TYPES = {}, TYPE_PL = {}, TYPE_SPINE = {}, LANGS = {};
+const DEFAULT_TYPES = [{ key: 'movie', label: 'Movie', pl: 'Movies', spine: 'FILM' }, { key: 'series', label: 'TV Series', pl: 'TV Series', spine: 'SERIES' }, { key: 'natok', label: 'Natok', pl: 'Natok', spine: 'NATOK' }];
+const typeName = k => TYPES[k] || k || 'Other';
+const DEFAULT_LANGS = { en: 'English', hi: 'Hindi', ta: 'Tamil', ml: 'Malayalam', te: 'Telugu', kn: 'Kannada', 'bn-in': 'Bangla (Kolkata)', 'bn-bd': 'Bangla (Bangladesh)', ko: 'Korean', ja: 'Japanese', es: 'Spanish', fr: 'French', de: 'German', tr: 'Turkish', zh: 'Chinese', other: 'Other' };
+function langName(c) { if (!c) return 'Other'; if (LANGS[c]) return LANGS[c]; try { return new Intl.DisplayNames(['en'], { type: 'language' }).of(c) || c.toUpperCase(); } catch (e) { return c.toUpperCase(); } }
+const GENRE_FIX = { 'Sci-Fi & Fantasy': ['Science Fiction', 'Fantasy'], 'Action & Adventure': ['Action', 'Adventure'], 'War & Politics': ['War'], 'Kids': ['Family'], 'Soap': ['Drama'] };
+function normGenres(list) { const out = []; (list || []).forEach(g => (GENRE_FIX[g] || [g]).forEach(x => { if (x && !out.includes(x)) out.push(x); })); return out; }
+
+/* ---------------- colours ---------------- */
+const PALETTE = ['#8b1e2d','#1d4e89','#0f6b5c','#6a2c91','#b4561b','#2f3e46','#9c6b00','#a4243b','#264653','#5b2a86','#1b6ca8','#7a4419','#2d6a4f','#c44536','#3d405b','#0b7285','#862e9c','#5c940d'];
+function hash(s) { let h = 2166136261; for (const ch of String(s)) { h ^= ch.codePointAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+const hashColor = s => PALETTE[hash(s || 'x') % PALETTE.length];
+function hexRgb(h) { h = (h || '#777777').replace('#', ''); if (h.length === 3) h = h.split('').map(x => x + x).join(''); const n = parseInt(h, 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+const rgbHex = (r, g, b) => '#' + [r, g, b].map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');
+function lum(h) { const [r, g, b] = hexRgb(h).map(v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); }); return .2126 * r + .7152 * g + .0722 * b; }
+const textOn = c => lum(c) > .42 ? '#1b1712' : '#fbf7f0';
+function shade(h, amt) { const [r, g, b] = hexRgb(h); const t = amt < 0 ? 0 : 255, p = Math.abs(amt); return rgbHex(r + (t - r) * p, g + (t - g) * p, b + (t - b) * p); }
+function colorFromImage(img) {
+  try {
+    const c = document.createElement('canvas'); c.width = c.height = 24; const x = c.getContext('2d');
+    x.drawImage(img, 0, 0, 24, 24); const d = x.getImageData(0, 0, 24, 24).data;
+    let R = 0, G = 0, B = 0, W = 0;
+    for (let k = 0; k < d.length; k += 4) { const r = d[k], g = d[k+1], b = d[k+2]; const mx = Math.max(r, g, b), mn = Math.min(r, g, b); const s = mx - mn; const w = 1 + (s * s) / 400 * (mx > 30 && mx < 245 ? 1 : .2); R += r * w; G += g * w; B += b * w; W += w; }
+    let hex = rgbHex(R / W, G / W, B / W);
+    const L = lum(hex); if (L > .6) hex = shade(hex, -.35); else if (L < .02) hex = shade(hex, .12);
+    return hex;
+  } catch (e) { return null; }
+}
+function loadImage(src, cors) { return new Promise(res => { const im = new Image(); if (cors) im.crossOrigin = 'anonymous'; im.onload = () => res(im); im.onerror = () => res(null); im.src = src; setTimeout(() => res(null), 8000); }); }
+
+/* ---------------- settings & themes ---------------- */
+const THEMES = {
+  oak:      { name: 'Oak Library', dark: false, v: { 'wall':'#ece4d6','wall-2':'#f5efe4','cab':'#cdbb9c','cab-top':'#b9a382','wood-hi':'#dcae72','wood':'#b98546','wood-lo':'#7c5127','ink':'#2b2118','ink-2':'#6c5c4a','panel':'#fbf8f2','panel-2':'#f0e9dd','line':'#ddd0bc','accent':'#1f6f78','on-accent':'#ffffff','shadow':'rgba(50,30,10,.35)','glow':'rgba(255,255,255,.35)','star':'#d99a00' } },
+  mint:     { name: 'Mint Studio', dark: false, v: { 'wall':'#e2f0ea','wall-2':'#f1f9f5','cab':'#c5dfd5','cab-top':'#aecbbf','wood-hi':'#f3e3c4','wood':'#dcc396','wood-lo':'#a88b58','ink':'#163a32','ink-2':'#4b6c63','panel':'#f7fcfa','panel-2':'#e6f2ed','line':'#c6ddd4','accent':'#d94a72','on-accent':'#ffffff','shadow':'rgba(20,60,50,.28)','glow':'rgba(255,255,255,.5)','star':'#d99a00' } },
+  candy:    { name: 'Candy Pop', dark: false, v: { 'wall':'#fbe7f0','wall-2':'#fff4f9','cab':'#f0cde0','cab-top':'#e2b4cc','wood-hi':'#ffffff','wood':'#f1e1ea','wood-lo':'#cfa9bd','ink':'#3a1d3c','ink-2':'#7a577b','panel':'#fff8fb','panel-2':'#f8e6ef','line':'#ebcfdd','accent':'#7446d8','on-accent':'#ffffff','shadow':'rgba(90,30,70,.25)','glow':'rgba(255,255,255,.7)','star':'#e09a00' } },
+  sky:      { name: 'Sky Room', dark: false, v: { 'wall':'#e4edfa','wall-2':'#f3f7fe','cab':'#cddbf1','cab-top':'#b5c8e6','wood-hi':'#ffffff','wood':'#e0e8f3','wood-lo':'#aebdd3','ink':'#172a44','ink-2':'#4e617d','panel':'#f8fbff','panel-2':'#e8eff9','line':'#cad7eb','accent':'#e8701f','on-accent':'#ffffff','shadow':'rgba(20,40,80,.25)','glow':'rgba(255,255,255,.7)','star':'#d99a00' } },
+  cinema:   { name: 'Cinema Hall', dark: true, v: { 'wall':'#160b0d','wall-2':'#3b0f17','cab':'#0b0506','cab-top':'#1c0b0e','wood-hi':'#7a4430','wood':'#4e281b','wood-lo':'#26120b','ink':'#f5ebe1','ink-2':'#bda898','panel':'#1c1112','panel-2':'#2b1a1b','line':'#3d2829','accent':'#e4b24c','on-accent':'#1d1206','shadow':'rgba(0,0,0,.6)','glow':'rgba(228,178,76,.25)','star':'#f0c040' } },
+  midnight: { name: 'Midnight Blue', dark: true, v: { 'wall':'#0c1424','wall-2':'#16264a','cab':'#070c17','cab-top':'#0f1830','wood-hi':'#3a4a6b','wood':'#26324d','wood-lo':'#121a2b','ink':'#e6edf8','ink-2':'#98a8c2','panel':'#111b2f','panel-2':'#1a2641','line':'#263452','accent':'#4fd1c5','on-accent':'#062421','shadow':'rgba(0,0,0,.6)','glow':'rgba(79,209,197,.25)','star':'#f0c040' } },
+  neon:     { name: 'Neon Night', dark: true, v: { 'wall':'#120a22','wall-2':'#2a1250','cab':'#08040f','cab-top':'#160b2a','wood-hi':'#43277a','wood':'#2c1852','wood-lo':'#160b2a','ink':'#f3ecff','ink-2':'#ae9fcf','panel':'#190e2c','panel-2':'#25163f','line':'#37235c','accent':'#ff4fa3','on-accent':'#2a0718','shadow':'rgba(0,0,0,.65)','glow':'#3ee6ff','star':'#ffd23f' } },
+  ebony:    { name: 'Ebony Wood', dark: true, v: { 'wall':'#1a1917','wall-2':'#2a2723','cab':'#0f0e0d','cab-top':'#1a1816','wood-hi':'#66503c','wood':'#45362a','wood-lo':'#241b14','ink':'#efeae3','ink-2':'#a9a096','panel':'#211f1c','panel-2':'#2d2a26','line':'#3b3732','accent':'#df8a4f','on-accent':'#1f1006','shadow':'rgba(0,0,0,.6)','glow':'rgba(255,255,255,.08)','star':'#f0c040' } }
+};
+const TOKENS = Object.keys(THEMES.oak.v);
+const FONTS = {
+  lato: { name: 'Lato', css: "'Lato'", g: 'Lato:wght@400;700' },
+  roboto: { name: 'Roboto', css: "'Roboto'", g: 'Roboto:wght@400;700' },
+  poppins: { name: 'Poppins', css: "'Poppins'", g: 'Poppins:wght@400;600;700' },
+  montserrat: { name: 'Montserrat', css: "'Montserrat'", g: 'Montserrat:wght@400;700' },
+  nunito: { name: 'Nunito', css: "'Nunito'", g: 'Nunito:wght@400;700' },
+  opensans: { name: 'Open Sans', css: "'Open Sans'", g: 'Open+Sans:wght@400;700' },
+  merriweather: { name: 'Merriweather', css: "'Merriweather'", g: 'Merriweather:wght@400;700' },
+  playfair: { name: 'Playfair Display', css: "'Playfair Display'", g: 'Playfair+Display:wght@400;700' },
+  hind: { name: 'Hind Siliguri (Bangla)', css: "'Hind Siliguri'", g: 'Hind+Siliguri:wght@400;600' },
+  times: { name: 'Times New Roman', css: "'Times New Roman',Times" },
+  georgia: { name: 'Georgia', css: 'Georgia' },
+  arial: { name: 'Arial', css: 'Arial,Helvetica' }
+};
+const S = {
+  view: 'home', filter: 'all',
+  mode: LS.get('mode', 'spine'), zoom: LS.get('zoom', 1),
+  theme: LS.get('theme', 'auto'), font: LS.get('font', 'lato'),
+  shelves: LS.get('shelves', { order: [], hidden: ['year:auto', 'rewatch', 'top'] }),
+  pinned: LS.get('pinned', []),
+  tmdb: LS.get('tmdb', ''), omdb: LS.get('omdb', ''),
+  lastBackup: LS.get('lastBackup', 0),
+  types: LS.get('types', null) || DEFAULT_TYPES.map(t => Object.assign({}, t)),
+  langs: LS.get('langs', null) || Object.entries(DEFAULT_LANGS).map(([key, label]) => ({ key, label })),
+  genreList: LS.get('genreList', [])
+};
+function syncLists() {
+  [TYPES, TYPE_PL, TYPE_SPINE, LANGS].forEach(o => Object.keys(o).forEach(k => delete o[k]));
+  S.types.forEach(t => { TYPES[t.key] = t.label; TYPE_PL[t.key] = t.pl || t.label; TYPE_SPINE[t.key] = t.spine || String(t.label).toUpperCase().slice(0, 10); });
+  S.langs.forEach(l => { LANGS[l.key] = l.label; });
+}
+function saveLists() { LS.set('types', S.types); LS.set('langs', S.langs); LS.set('genreList', S.genreList); syncLists(); }
+syncLists();
+const sameName = (a, b) => String(a).trim().toLowerCase() === String(b).trim().toLowerCase();
+function allGenres() { const set = new Map(); S.genreList.concat(...ITEMS.map(i => i.genres || [])).forEach(g => { if (g && ![...set.keys()].some(k => sameName(k, g))) set.set(g, 1); }); return [...set.keys()].sort((a, b) => a.localeCompare(b)); }
+function addGenre(name) { name = String(name || '').trim(); if (!name) return ''; const ex = allGenres().find(g => sameName(g, name)); if (ex) { if (!S.genreList.includes(ex)) { S.genreList.push(ex); saveLists(); } return ex; } S.genreList.push(name); saveLists(); return name; }
+function addType(label) { label = String(label || '').trim(); if (!label) return ''; const ex = S.types.find(t => sameName(t.label, label)); if (ex) return ex.key; const key = 't' + Date.now().toString(36); S.types.push({ key, label, pl: label, spine: label.toUpperCase().slice(0, 10) }); saveLists(); return key; }
+function addLang(label) { label = String(label || '').trim(); if (!label) return ''; const ex = S.langs.find(l => sameName(l.label, label)); if (ex) return ex.key; const key = 'l' + Date.now().toString(36); S.langs.push({ key, label }); saveLists(); return key; }
+const firstType = pref => TYPES[pref] ? pref : S.types[0].key;
+const firstLang = pref => LANGS[pref] ? pref : (S.langs[0] ? S.langs[0].key : 'other');
+const loadedFonts = new Set(['lato', 'hind']);
+function loadFont(id) {
+  const f = FONTS[id]; if (!f || !f.g || loadedFonts.has(id)) return; loadedFonts.add(id);
+  const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=' + f.g + '&display=swap'; document.head.appendChild(l);
+}
+function applyLook() {
+  const r = document.documentElement;
+  TOKENS.forEach(k => r.style.removeProperty('--' + k)); r.style.removeProperty('color-scheme');
+  const t = THEMES[S.theme];
+  if (t) { Object.entries(t.v).forEach(([k, v]) => r.style.setProperty('--' + k, v)); r.style.setProperty('color-scheme', t.dark ? 'dark' : 'light'); }
+  const f = FONTS[S.font] || FONTS.lato; loadFont(S.font);
+  r.style.setProperty('--f-ui', f.css + ",'Hind Siliguri',system-ui,-apple-system,sans-serif");
+  r.style.setProperty('--z', S.zoom);
+  const m = $('meta[name="theme-color"]'); if (m) m.content = getComputedStyle(r).getPropertyValue('--wall').trim() || '#ece4d6';
+}
+
+/* ---------------- posters & spines ---------------- */
+function colorsOf(i) { const c = i.spineColor || hashColor(i.title); return { c, t: textOn(c), c2: shade(c, -.45) }; }
+function posterHTML(i) {
+  const { c, t, c2 } = colorsOf(i);
+  const lw = Math.max(0, ...String(i.title || '').split(/\s+/).map(w => w.length)); const pf = lw > 10 ? .68 : lw > 7 ? .8 : 1;
+  return `<div class="pst" style="--c:${c};--t:${t};--c2:${c2};--pf:${pf}"><div class="pst-fb"><span class="k">${TYPE_SPINE[i.type] || 'FILM'}</span><span class="tt">${esc(i.title)}</span><span class="yy">${esc(i.year || '')}</span></div>${i.poster ? `<img src="${esc(i.poster)}" alt="" loading="lazy" decoding="async" onerror="this.remove()">` : ''}</div>`;
+}
+function spineHTML(i) {
+  const { c, t } = colorsOf(i); const len = (i.title || '').length;
+  const fs = len > 30 ? 10 : len > 22 ? 11.5 : len > 15 ? 13 : 14.5;
+  const st = hash(i.id + i.title) % 3;
+  return `<button class="dvd s${st}" data-id="${i.id}" style="--c:${c};--t:${t};--fs:${fs}px" aria-label="${esc(i.title)}${i.year ? ', ' + i.year : ''}"><span class="dvd-brand">${TYPE_SPINE[i.type] || 'FILM'}</span>${i.favorite ? '<span class="dvd-fav" aria-hidden="true">♥</span>' : ''}<span class="dvd-title">${esc(i.title)}</span><span class="dvd-year">${esc(i.year || '')}</span>${i.status === 'watchlist' ? '<span class="dvd-flag" title="Want to watch">W</span>' : ''}</button>`;
+}
+function coverHTML(i) { return `<button class="cov" data-id="${i.id}" aria-label="${esc(i.title)}">${posterHTML(i)}</button>`; }
+function gridHTML(list) { return `<div class="grid">${list.map(i => `<button class="gcell" data-id="${i.id}"><div class="cv">${posterHTML(i)}</div><div class="cap">${esc(i.title)}</div><div class="sub">${esc(i.year || '')} · ${typeName(i.type)}${i.myRating ? ' · ★' + i.myRating : ''}</div></button>`).join('')}</div>`; }
+function listRowHTML(i, right) { return `<button class="li" data-id="${i.id}"><div class="cv">${posterHTML(i)}</div><div><div class="t">${esc(i.title)}</div><div class="s">${esc([i.year, typeName(i.type), langName(i.lang)].filter(Boolean).join(' · '))}</div><div class="s">${esc((i.cast || []).slice(0, 3).join(', '))}</div></div><div class="r">${right || (i.imdbRating ? 'IMDb ' + i.imdbRating : '')}</div></button>`; }
+
+/* ---------------- shelves ---------------- */
+const passFilter = i => S.filter === 'all' || i.type === S.filter;
+function allDefs() {
+  const defs = [
+    { key: 'fav', label: 'Favorites', test: i => i.favorite },
+    { key: 'recent', label: 'Recently added', test: () => true, sort: 'added', limit: 40 },
+    { key: 'watchlist', label: 'Want to watch', test: i => i.status === 'watchlist', sort: 'added' },
+    { key: 'top', label: 'My 9–10 ratings', test: i => (i.myRating || 0) >= 9 },
+    { key: 'rewatch', label: 'Watched more than once', test: i => (i.watchCount || 0) > 1 },
+  ];
+  Object.keys(TYPES).forEach(t => defs.push({ key: 'type:' + t, label: TYPE_PL[t], test: i => i.type === t }));
+  const cnt = (f) => { const m = new Map(); ITEMS.forEach(i => f(i).forEach(v => v && m.set(v, (m.get(v) || 0) + 1))); return [...m.entries()].sort((a, b) => b[1] - a[1]).map(x => x[0]); };
+  cnt(i => [i.lang]).forEach(l => defs.push({ key: 'lang:' + l, label: langName(l), test: i => i.lang === l }));
+  cnt(i => i.genres || []).forEach(g => defs.push({ key: 'genre:' + g, label: g, test: i => (i.genres || []).includes(g) }));
+  S.pinned.forEach(p => defs.push({ key: 'person:' + p, label: p, test: i => personIn(i, p) }));
+  defs.push({ key: 'year:auto', label: 'By release year (one shelf per year)', test: () => true });
+  return defs;
+}
+const personIn = (i, p) => (i.cast || []).includes(p) || (i.director || []).includes(p);
+function orderedDefs() {
+  const defs = allDefs(); const map = new Map(defs.map(d => [d.key, d]));
+  const out = []; S.shelves.order.forEach(k => { if (map.has(k)) { out.push(map.get(k)); map.delete(k); } });
+  return out.concat([...map.values()]);
+}
+const isHidden = k => S.shelves.hidden.includes(k);
+function sortList(list, how) {
+  const l = list.slice();
+  if (how === 'added') l.sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0));
+  else l.sort((a, b) => (b.year || 0) - (a.year || 0) || String(a.title).localeCompare(String(b.title)));
+  return l;
+}
+function shelfHTML(label, list, key) {
+  const inner = S.mode === 'cover' ? list.map(coverHTML).join('') : list.map(spineHTML).join('');
+  return `<section class="shelf"><div class="shelf-head"><h2>${esc(label)}</h2><span class="n">${list.length}</span><button class="more" data-act="openList" data-key="${esc(key)}">See all ›</button></div><div class="bay"><div class="row">${inner}</div><div class="plank"></div></div></section>`;
+}
+function renderHome() {
+  const el = $('#shelves');
+  const watchedThisYear = ITEMS.reduce((n, i) => n + watchYears(i).filter(y => y === THIS_YEAR).length, 0);
+  $('#tally').innerHTML = `<strong>${ITEMS.length}</strong> titles<br>${watchedThisYear} watched in ${THIS_YEAR}`;
+  if (S.filter !== 'all' && !TYPES[S.filter]) S.filter = 'all';
+  $('#filterSeg').innerHTML = `<button data-act="filter" data-f="all" aria-pressed="${S.filter === 'all'}">All</button>` + S.types.map(t => `<button data-act="filter" data-f="${esc(t.key)}" aria-pressed="${S.filter === t.key}">${esc(t.pl || t.label)}</button>`).join('');
+  $$('#modeSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.m === S.mode)));
+  $('#zoomRange').value = S.zoom;
+  if (!ITEMS.length) {
+    const ghost = Array.from({ length: 9 }, () => '<span class="dvd empty-slot"></span>').join('');
+    el.innerHTML = `<div class="empty"><h2>Your shelf is empty</h2><p>Add the first movie, series or natok you have watched.</p><div class="bay"><div class="row">${ghost}</div><div class="plank"></div></div><div class="btnrow" style="justify-content:center"><button class="btn" data-act="add">Add a title</button><button class="btn ghost" data-act="examplesLoad">Show examples</button></div></div>`;
+    return;
+  }
+  const items = ITEMS.filter(passFilter);
+  let html = '';
+  if (ITEMS.some(i => i.example)) html += `<div class="banner"><span>These are example titles so you can see the shelf. Remove them when you add your own.</span><button class="btn plain" data-act="examplesRemove">Remove</button></div>`;
+  orderedDefs().filter(d => !isHidden(d.key)).forEach(d => {
+    if (d.key === 'year:auto') {
+      const years = [...new Set(items.map(i => i.year).filter(Boolean))].sort((a, b) => b - a);
+      years.forEach(y => { const l = sortList(items.filter(i => i.year === y)); html += shelfHTML('Released ' + y, l, 'year:' + y); });
+      return;
+    }
+    let l = sortList(items.filter(d.test), d.sort); if (d.limit) l = l.slice(0, d.limit);
+    if (l.length) html += shelfHTML(d.label, l, d.key);
+  });
+  if (!items.length) html += `<p class="hint">Nothing here for this filter yet.</p>`;
+  el.innerHTML = html;
+}
+
+/* ---------------- views ---------------- */
+function showView(v) {
+  S.view = v;
+  ['home', 'search', 'stats', 'settings'].forEach(k => { $('#view-' + k).hidden = k !== v; });
+  $('#homeTools').hidden = v !== 'home'; $('#homeTools2').hidden = v !== 'home';
+  $$('.nav [data-view]').forEach(b => { if (b.dataset.view === v) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+  if (v === 'home') renderHome();
+  if (v === 'search') renderSearch();
+  if (v === 'stats') renderStats();
+  if (v === 'settings') renderSettings();
+  window.scrollTo(0, 0);
+}
+
+/* ---------------- search ---------------- */
+function norm(s) { return String(s ?? '').toLowerCase().normalize('NFKC').replace(/[^\p{L}\p{M}\p{N}\s]/gu, ' ').replace(/\s+/g, ' ').trim(); }
+function lev(a, b) {
+  if (a === b) return 0; const m = a.length, n = b.length; if (!m || !n) return m || n;
+  let prev = Array.from({ length: n + 1 }, (_, k) => k);
+  for (let x = 1; x <= m; x++) { const cur = [x]; for (let y = 1; y <= n; y++) cur[y] = Math.min(prev[y] + 1, cur[y - 1] + 1, prev[y - 1] + (a[x - 1] === b[y - 1] ? 0 : 1)); prev = cur; }
+  return prev[n];
+}
+function indexItem(i) {
+  const title = norm(i.title + ' ' + (i.originalTitle || ''));
+  const hay = norm([i.title, i.originalTitle, i.year, typeName(i.type), langName(i.lang), (i.genres || []).join(' '), (i.cast || []).join(' '), (i.director || []).join(' '), i.note, i.plot].join(' '));
+  return { title, hay, words: [...new Set(hay.split(' '))] };
+}
+function score(ix, toks, full) {
+  let total = 0;
+  for (const t of toks) {
+    let s = 0;
+    if (ix.title.includes(t)) s = 5; else if (ix.hay.includes(t)) s = 3;
+    else if (t.length >= 3 && !/^\d+$/.test(t)) {
+      const lim = t.length >= 7 ? 2 : 1;
+      for (const w of ix.words) {
+        if (Math.abs(w.length - t.length) <= lim && lev(w, t) <= lim) { s = 1.6; break; }
+        if (w.length > t.length && lev(w.slice(0, t.length), t) <= lim) { s = 1; break; }
+      }
+    }
+    if (!s) return 0; total += s;
+  }
+  if (ix.title.startsWith(full)) total += 4;
+  return total;
+}
+function runSearch(q) {
+  const full = norm(q); if (!full) return [];
+  const toks = full.split(' ');
+  return ITEMS.map(i => ({ i, s: score(indexItem(i), toks, full) })).filter(x => x.s > 0).sort((a, b) => b.s - a.s || (b.i.year || 0) - (a.i.year || 0)).map(x => x.i);
+}
+let searchQ = '';
+function renderSearch() {
+  const el = $('#view-search');
+  const years = [...new Set(ITEMS.map(i => i.year).filter(Boolean))].sort((a, b) => b - a);
+  const count = f => { const m = new Map(); ITEMS.forEach(i => f(i).forEach(v => v && m.set(v, (m.get(v) || 0) + 1))); return [...m.entries()].sort((a, b) => b[1] - a[1]); };
+  const genres = count(i => i.genres || []), langs = count(i => [i.lang]), people = count(i => i.cast || []).filter(x => x[1] > 1).slice(0, 14);
+  el.innerHTML = `<div class="stack">
+    <label class="search" for="q"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L20 20"/></svg><span class="vh">Search your shelf</span><input id="q" type="search" enterkeyhint="search" placeholder="Title, actor, director, year, note…" value="${esc(searchQ)}" autocomplete="off"></label>
+    <div id="results"></div>
+    <div id="browse" class="stack">
+      ${years.length ? `<div><p class="sec-title">Release year</p><div class="chips">${years.map(y => `<button class="chip" data-act="openList" data-key="year:${y}">${y}<small>${ITEMS.filter(i => i.year === y).length}</small></button>`).join('')}</div></div>` : ''}
+      ${genres.length ? `<div><p class="sec-title">Category</p><div class="chips">${genres.map(([g, n]) => `<button class="chip" data-act="openList" data-key="genre:${esc(g)}">${esc(g)}<small>${n}</small></button>`).join('')}</div></div>` : ''}
+      ${langs.length ? `<div><p class="sec-title">Language</p><div class="chips">${langs.map(([l, n]) => `<button class="chip" data-act="openList" data-key="lang:${esc(l)}">${esc(langName(l))}<small>${n}</small></button>`).join('')}</div></div>` : ''}
+      <div><p class="sec-title">Type</p><div class="chips">${Object.keys(TYPES).map(t => `<button class="chip" data-act="openList" data-key="type:${t}">${TYPE_PL[t]}<small>${ITEMS.filter(i => i.type === t).length}</small></button>`).join('')}<button class="chip" data-act="openList" data-key="fav">Favorites<small>${ITEMS.filter(i => i.favorite).length}</small></button><button class="chip" data-act="openList" data-key="watchlist">Want to watch<small>${ITEMS.filter(i => i.status === 'watchlist').length}</small></button></div></div>
+      ${people.length ? `<div><p class="sec-title">Actors you watch most</p><div class="chips">${people.map(([p, n]) => `<button class="chip" data-act="person" data-name="${esc(p)}">${esc(p)}<small>${n}</small></button>`).join('')}</div></div>` : ''}
+    </div></div>`;
+  const inp = $('#q');
+  const upd = () => {
+    searchQ = inp.value; const r = runSearch(searchQ);
+    $('#browse').hidden = !!searchQ.trim();
+    $('#results').innerHTML = !searchQ.trim() ? '' : r.length ? `<p class="sec-title">${r.length} found</p><div class="list">${r.map(i => listRowHTML(i)).join('')}</div>` : `<p class="hint">Nothing on your shelf matches “${esc(searchQ)}”. To add it, tap + and search online.</p>`;
+  };
+  inp.addEventListener('input', upd); upd();
+}
+
+/* ---------------- list / person sheets ---------------- */
+function listFor(key) {
+  if (key.startsWith('year:')) { const y = +key.slice(5); return { title: 'Released in ' + y, list: sortList(ITEMS.filter(i => i.year === y)) }; }
+  if (key.startsWith('person:')) { const p = key.slice(7); return { title: p, list: sortList(ITEMS.filter(i => personIn(i, p))) }; }
+  const d = allDefs().find(x => x.key === key);
+  if (!d) return { title: 'Shelf', list: [] };
+  return { title: d.label, list: sortList(ITEMS.filter(d.test), d.sort) };
+}
+function openList(key) {
+  const { title, list } = listFor(key);
+  openSheet(`${barHTML(title)}<div class="sh-body"><p class="hint">${list.length} ${list.length === 1 ? 'title' : 'titles'}</p>${list.length ? gridHTML(list) : '<p class="hint">Nothing here yet.</p>'}</div>`, { list: key });
+}
+function openPerson(name) {
+  const list = sortList(ITEMS.filter(i => personIn(i, name)));
+  const pinned = S.pinned.includes(name);
+  const roles = [...new Set(list.map(i => (i.director || []).includes(name) ? 'Director' : 'Cast'))].join(' & ');
+  openSheet(`${barHTML(name)}<div class="sh-body">
+    <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><p class="hint">${esc(roles)} · ${list.length} on your shelf</p><button class="btn ${pinned ? 'plain' : 'ghost'}" data-act="pin" data-name="${esc(name)}">${pinned ? 'Remove shelf from home' : 'Add as a shelf on home'}</button></div>
+    <div class="bay"><div class="row">${list.map(spineHTML).join('')}</div><div class="plank"></div></div>
+    ${gridHTML(list)}</div>`, { person: name });
+}
+
+/* ---------------- sheets ---------------- */
+const SHEETS = []; let ignorePop = 0;
+function barHTML(title, right = '') { return `<div class="sh-bar"><button class="bk" data-act="back"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>Back</button><h2>${esc(title)}</h2><div class="rt">${right}</div></div>`; }
+function openSheet(html, data = {}) {
+  const s = document.createElement('div'); s.className = 'sheet'; s.innerHTML = html;
+  Object.entries(data).forEach(([k, v]) => s.dataset[k] = v);
+  $('#sheets').appendChild(s); SHEETS.push(s);
+  requestAnimationFrame(() => requestAnimationFrame(() => s.classList.add('open')));
+  document.body.classList.add('locked');
+  if (!FRAMED) { try { history.pushState({ ms: SHEETS.length }, ''); } catch (e) {} }
+  return s;
+}
+function dropSheet() { const s = SHEETS.pop(); if (!s) return; s.classList.remove('open'); setTimeout(() => s.remove(), 280); if (!SHEETS.length) document.body.classList.remove('locked'); }
+function closeSheet() { dropSheet(); if (!FRAMED) { ignorePop++; try { history.back(); } catch (e) { ignorePop--; } } }
+function closeAll() { const n = SHEETS.length; while (SHEETS.length) dropSheet(); if (!FRAMED && n) { ignorePop++; try { history.go(-n); } catch (e) { ignorePop--; } } }
+window.addEventListener('popstate', () => { if (ignorePop > 0) { ignorePop--; return; } if (SHEETS.length) dropSheet(); });
+function refreshSheets() {
+  SHEETS.forEach(s => {
+    const top = s.scrollTop;
+    if (s.dataset.detail) { const i = byId(s.dataset.detail); if (!i) return; s.innerHTML = detailHTML(i); bindDetail(s, i); }
+    else if (s.dataset.list) { const { title, list } = listFor(s.dataset.list); s.innerHTML = `${barHTML(title)}<div class="sh-body"><p class="hint">${list.length} titles</p>${gridHTML(list)}</div>`; }
+    s.scrollTop = top;
+  });
+}
+function rerenderAll() { refreshSheets(); if (S.view === 'home') renderHome(); else if (S.view === 'search') renderSearch(); else if (S.view === 'stats') renderStats(); }
+
+/* ---------------- detail ---------------- */
+const IC = {
+  heart: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 8 3.6 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.4 0 5.6 3.5 4.3 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"/></svg>',
+  heartO: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 8 3.6 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.4 0 5.6 3.5 4.3 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"/></svg>',
+  eye: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+  clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  again: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>',
+  edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>',
+  trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>',
+  refresh: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 14-5.3L20 9M20 4v5h-5M20 12a8 8 0 0 1-14 5.3L4 15M4 20v-5h5"/></svg>'
+};
+function fmtDate(d) { try { return new Date(d + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); } catch (e) { return d; } }
+function detailHTML(i) {
+  const { c } = colorsOf(i);
+  const meta = [i.year, i.runtime ? i.runtime + ' min' : '', i.seasons ? i.seasons + (i.seasons > 1 ? ' seasons' : ' season') : ''].filter(Boolean).join(' · ');
+  const stars = Array.from({ length: 10 }, (_, k) => `<button class="${k < (i.myRating || 0) ? 'on' : ''}" data-act="rate" data-v="${k + 1}" aria-label="${k + 1} out of 10">★</button>`).join('');
+  const isShow = i.type !== 'movie';
+  return `${barHTML(typeName(i.type), `<button class="bk" data-act="edit" style="justify-content:flex-end">Edit</button>`)}
+  <div class="d-hero" style="--c:${c}">
+    <div class="d-poster lg">${posterHTML(i)}</div>
+    <div class="d-head">
+      <div class="d-kicker">${esc(typeName(i.type))} · ${esc(langName(i.lang))}</div>
+      <h1>${esc(i.title)}</h1>
+      ${i.originalTitle && i.originalTitle !== i.title ? `<div class="d-orig">${esc(i.originalTitle)}</div>` : ''}
+      ${meta ? `<div class="d-meta">${esc(meta)}</div>` : ''}
+      <div class="badges">${i.imdbRating ? `<span class="badge imdb"><i>IMDb</i> ${esc(i.imdbRating)}</span>` : ''}${i.tmdbRating ? `<span class="badge">TMDB ${esc(i.tmdbRating)}</span>` : ''}${i.myRating ? `<span class="badge">Mine ${i.myRating}/10</span>` : ''}</div>
+    </div>
+  </div>
+  <div class="sh-body">
+    <div class="d-actions">
+      <button class="act ${i.favorite ? 'on' : ''}" data-act="fav">${i.favorite ? IC.heart : IC.heartO}${i.favorite ? 'Favorite' : 'Add to favorites'}</button>
+      <button class="act ${i.status === 'watched' ? 'on' : ''}" data-act="status">${i.status === 'watched' ? IC.eye + 'Watched' : IC.clock + 'Want to watch'}</button>
+      <button class="act" data-act="again">${IC.again}${i.status === 'watched' ? 'Watched again' : 'Mark watched'}</button>
+    </div>
+    <div class="blk"><h3>My rating</h3><div class="stars">${stars}<span class="val">${i.myRating ? i.myRating + ' / 10' : 'Not rated'}</span></div></div>
+    ${i.genres && i.genres.length ? `<div class="blk"><h3>Category</h3><div class="chips">${i.genres.map(g => `<button class="chip" data-act="openList" data-key="genre:${esc(g)}">${esc(g)}</button>`).join('')}</div></div>` : ''}
+    ${i.director && i.director.length ? `<div class="blk"><h3>${isShow ? 'Created / directed by' : 'Director'}</h3><div class="chips">${i.director.map(p => `<button class="chip" data-act="person" data-name="${esc(p)}">${esc(p)}</button>`).join('')}</div></div>` : ''}
+    ${i.cast && i.cast.length ? `<div class="blk"><h3>Cast</h3><div class="chips">${i.cast.map((p, k) => `<button class="chip ${k < 2 ? 'ac' : ''}" data-act="person" data-name="${esc(p)}">${esc(p)}</button>`).join('')}</div></div>` : ''}
+    ${i.plot ? `<div class="blk"><h3>Story</h3><p>${esc(i.plot)}</p></div>` : ''}
+    ${isShow && i.seasons ? `<div class="blk"><h3>Progress</h3><p>Watched ${i.seasonsWatched || 0} of ${i.seasons} season${i.seasons > 1 ? 's' : ''}</p></div>` : ''}
+    <div class="blk"><h3>Watch history</h3>${i.status === 'watched' ? `<p>Watched <strong>${i.watchCount || 1}</strong> time${(i.watchCount || 1) > 1 ? 's' : ''}</p>${(i.watchDates || []).length ? `<div class="hist" style="margin-top:6px">${i.watchDates.slice().sort().reverse().map(fmtDate).map(d => `<span class="chip">${d}</span>`).join('')}</div>` : ''}` : '<p class="hint">Not watched yet. It is on your “Want to watch” shelf.</p>'}</div>
+    <div class="blk"><h3><label for="note-${i.id}">My note</label></h3><textarea class="note" id="note-${i.id}" placeholder="Anything you want to remember about it…">${esc(i.note || '')}</textarea></div>
+    <div class="btnrow">
+      ${i.tmdbId ? `<button class="btn plain" data-act="refresh">${IC.refresh}Update from internet</button>` : ''}
+      <button class="btn danger" data-act="del">${IC.trash}Delete</button>
+    </div>
+    <p class="hint">Added ${new Date(i.addedAt || Date.now()).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}${i.tmdbId ? ' · Details from TMDB' : ''}${i.example ? ' · Example title' : ''}</p>
+  </div>`;
+}
+function bindDetail(s, i) {
+  const ta = s.querySelector('.note'); let tmr;
+  ta.addEventListener('input', () => { clearTimeout(tmr); tmr = setTimeout(() => { const it = byId(i.id); if (!it) return; it.note = ta.value; saveItem(it); }, 400); });
+}
+function openDetail(id) { const i = byId(id); if (!i) return; const s = openSheet(detailHTML(i), { detail: id }); bindDetail(s, i); }
+function currentDetail() { for (let k = SHEETS.length - 1; k >= 0; k--) if (SHEETS[k].dataset.detail) return byId(SHEETS[k].dataset.detail); return null; }
+function pullOut(el) {
+  el.classList.add('pull');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  setTimeout(() => { openDetail(el.dataset.id); setTimeout(() => el.classList.remove('pull'), 300); }, reduce ? 0 : 200);
+}
+
+/* ---------------- edit / manual form ---------------- */
+let FORM = { poster: '', color: '', touched: false };
+function fld(label, id, val = '', type = 'text', extra = '') { return `<label class="fld" for="${id}"><span>${label}</span><input id="${id}" type="${type}" value="${esc(val)}" ${extra}></label>`; }
+function sel(label, id, opts, val) { return `<label class="fld" for="${id}"><span>${label}</span><select id="${id}">${Object.entries(opts).map(([k, v]) => `<option value="${esc(k)}" ${k === val ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select></label>`; }
+function selNew(label, id, opts, val, ph) {
+  return `<div class="fld"><span id="${id}-l">${label}</span><select id="${id}" aria-labelledby="${id}-l" data-new="${id}-new">${Object.entries(opts).map(([k, v]) => `<option value="${esc(k)}" ${k === val ? 'selected' : ''}>${esc(v)}</option>`).join('')}<option value="__new">＋ Add new…</option></select><input id="${id}-new" class="newin" type="text" placeholder="${esc(ph)}" hidden autocomplete="off" style="border:1px solid var(--line);background:var(--panel-2);color:var(--ink);border-radius:9px;padding:9px 10px;font:inherit;font-size:16px;width:100%"></div>`;
+}
+function genreChips(selected) {
+  const list = allGenres(); selected.forEach(g => { if (!list.some(x => sameName(x, g))) list.push(g); });
+  return list.map(g => { const on = selected.some(x => sameName(x, g)); return `<button type="button" class="chip ${on ? 'ac' : ''}" data-fg="${esc(g)}" aria-pressed="${on}">${esc(g)}</button>`; }).join('') || '<span class="hint">No categories yet. Add one below.</span>';
+}
+function formHTML(i) {
+  const c = i.spineColor || hashColor(i.title || 'new');
+  const langs = Object.assign({}, LANGS); if (i.lang && !langs[i.lang]) langs[i.lang] = langName(i.lang);
+  return `<form class="form" id="mform" autocomplete="off">
+    <div class="f-photo"><div class="f-pv" id="f-pv">${posterHTML(Object.assign({}, i, { title: i.title || 'New title' }))}</div>
+      <div class="btns"><label class="btn plain" for="f-file">Choose photo</label><input id="f-file" class="vh" type="file" accept="image/*">
+      ${i.poster ? '<button type="button" class="btn ghost" data-act="photoClear">Remove photo</button>' : ''}
+      <label class="colorlbl" for="f-color">Spine colour <input id="f-color" type="color" value="${c}"></label></div></div>
+    ${fld('Title *', 'f-title', i.title, 'text', 'required')}
+    ${fld('Original title', 'f-orig', i.originalTitle)}
+    <div class="two">${selNew('Type', 'f-type', TYPES, i.type || firstType('movie'), 'New type name')}${sel('Status', 'f-status', { watched: 'Watched', watchlist: 'Want to watch' }, i.status || 'watched')}</div>
+    <div class="two">${fld('Release year', 'f-year', i.year || '', 'number', 'inputmode="numeric" min="1900" max="2100"')}${selNew('Language', 'f-lang', langs, i.lang || firstLang('en'), 'New language')}</div>
+    <div class="fld"><span>Categories / tags <small style="font-weight:400">(tap to choose)</small></span><div class="chips" id="f-gchips">${genreChips(i.genres || [])}</div>
+      <div class="addrow newin"><label class="vh" for="f-gnew">New category</label><input id="f-gnew" type="text" placeholder="New category, e.g. Psychological Thriller" autocomplete="off"><button type="button" class="btn plain" data-fgadd="1">Add</button></div></div>
+    ${fld('Director / creator', 'f-dir', (i.director || []).join(', '))}
+    ${fld('Cast (comma separated, lead first)', 'f-cast', (i.cast || []).join(', '))}
+    <div class="three">${fld('IMDb rating', 'f-imdb', i.imdbRating || '', 'number', 'step="0.1" min="0" max="10" inputmode="decimal"')}${fld('My rating /10', 'f-my', i.myRating || '', 'number', 'step="1" min="0" max="10" inputmode="numeric"')}${fld('Runtime (min)', 'f-run', i.runtime || '', 'number', 'inputmode="numeric"')}</div>
+    <div class="three">${fld('Seasons', 'f-seasons', i.seasons || '', 'number', 'inputmode="numeric"')}${fld('Seasons seen', 'f-sw', i.seasonsWatched || '', 'number', 'inputmode="numeric"')}${fld('Times watched', 'f-count', i.watchCount ?? (i.status === 'watchlist' ? 0 : 1), 'number', 'min="0" inputmode="numeric"')}</div>
+    ${fld('Last watched on', 'f-last', (i.watchDates || []).slice().sort().pop() || '', 'date')}
+    <label class="fld" for="f-plot"><span>Story (short)</span><textarea id="f-plot">${esc(i.plot || '')}</textarea></label>
+    <label class="fld" for="f-note"><span>My note</span><textarea id="f-note">${esc(i.note || '')}</textarea></label>
+    <label class="check" for="f-fav"><input id="f-fav" type="checkbox" ${i.favorite ? 'checked' : ''}> Favorite</label>
+    <div class="btnrow"><button class="btn" type="submit">Save</button><button class="btn plain" type="button" data-act="back">Cancel</button></div>
+  </form>`;
+}
+const splitList = s => String(s || '').split(',').map(x => x.trim()).filter(Boolean);
+function bindForm(s, base, onSave) {
+  FORM = { poster: base.poster || '', color: base.spineColor || '', touched: !!base.colorManual, genres: (base.genres || []).slice() };
+  $$('select[data-new]', s).forEach(sl => sl.addEventListener('change', () => { const inp = $('#' + sl.dataset.new, s); inp.hidden = sl.value !== '__new'; if (!inp.hidden) inp.focus(); }));
+  const drawChips = () => { $('#f-gchips', s).innerHTML = genreChips(FORM.genres); };
+  const addNewGenre = () => { const inp = $('#f-gnew', s); const g = addGenre(inp.value); if (!g) return; if (!FORM.genres.some(x => sameName(x, g))) FORM.genres.push(g); inp.value = ''; drawChips(); };
+  $('#f-gnew', s).addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addNewGenre(); } });
+  $('#mform', s).addEventListener('click', e => {
+    const c = e.target.closest('[data-fg]'); if (c) { const g = c.dataset.fg; FORM.genres = FORM.genres.some(x => sameName(x, g)) ? FORM.genres.filter(x => !sameName(x, g)) : FORM.genres.concat(g); drawChips(); return; }
+    if (e.target.closest('[data-fgadd]')) addNewGenre();
+  });
+  const pv = () => { const tmp = Object.assign({}, base, { title: $('#f-title', s).value || 'New title', poster: FORM.poster, spineColor: FORM.color || $('#f-color', s).value, type: $('#f-type', s).value === '__new' ? base.type : $('#f-type', s).value, year: $('#f-year', s).value }); $('#f-pv', s).innerHTML = posterHTML(tmp); };
+  $('#f-file', s).addEventListener('change', async e => {
+    const f = e.target.files[0]; if (!f) return;
+    const r = await processPhoto(f); if (!r) { toast('Could not read that photo'); return; }
+    FORM.poster = r.data; if (!FORM.touched) { FORM.color = r.color; $('#f-color', s).value = r.color; } pv();
+  });
+  $('#f-color', s).addEventListener('input', e => { FORM.color = e.target.value; FORM.touched = true; pv(); });
+  $('#f-title', s).addEventListener('input', pv);
+  $('#mform', s).addEventListener('click', e => { if (e.target.closest('[data-act="photoClear"]')) { FORM.poster = ''; pv(); e.target.closest('button').remove(); } });
+  $('#mform', s).addEventListener('submit', e => {
+    e.preventDefault();
+    const g = id => $('#' + id, s).value.trim();
+    const num = id => { const v = parseFloat(g(id)); return isNaN(v) ? null : v; };
+    const it = Object.assign({}, base);
+    it.title = g('f-title'); if (!it.title) { toast('Please write a title'); return; }
+    it.originalTitle = g('f-orig'); it.type = g('f-type'); it.status = g('f-status');
+    if (it.type === '__new') { it.type = addType(g('f-type-new')); if (!it.type) { toast('Write the new type name'); return; } }
+    it.year = num('f-year') ? Math.round(num('f-year')) : null; it.lang = g('f-lang');
+    if (it.lang === '__new') { it.lang = addLang(g('f-lang-new')); if (!it.lang) { toast('Write the new language'); return; } }
+    if ($('#f-gnew', s).value.trim()) { const ng = addGenre($('#f-gnew', s).value); if (ng && !FORM.genres.some(x => sameName(x, ng))) FORM.genres.push(ng); }
+    it.genres = FORM.genres.slice(); it.director = splitList(g('f-dir')); it.cast = splitList(g('f-cast'));
+    it.imdbRating = num('f-imdb') != null ? Math.round(num('f-imdb') * 10) / 10 : null;
+    it.myRating = num('f-my') != null ? Math.max(0, Math.min(10, Math.round(num('f-my')))) : 0;
+    it.runtime = num('f-run'); it.seasons = num('f-seasons'); it.seasonsWatched = num('f-sw');
+    it.plot = g('f-plot'); it.note = $('#f-note', s).value; it.favorite = $('#f-fav', s).checked;
+    it.poster = FORM.poster; it.spineColor = FORM.color || $('#f-color', s).value; it.colorManual = FORM.touched;
+    let cnt = num('f-count'); if (cnt == null) cnt = it.status === 'watched' ? 1 : 0;
+    const last = g('f-last'); let dates = (it.watchDates || []).slice();
+    if (last && !dates.includes(last)) dates.push(last);
+    dates.sort(); while (dates.length > cnt) dates.shift();
+    if (it.status === 'watched' && cnt < 1) cnt = 1;
+    it.watchCount = it.status === 'watched' ? cnt : 0; it.watchDates = it.status === 'watched' ? dates : [];
+    onSave(it);
+  });
+}
+function processPhoto(file) {
+  return new Promise(res => {
+    const fr = new FileReader();
+    fr.onload = async () => {
+      const im = await loadImage(fr.result, false); if (!im) return res(null);
+      const W = 420, ratio = im.naturalHeight / im.naturalWidth; const w = Math.min(W, im.naturalWidth); const h = Math.round(w * ratio);
+      const c = document.createElement('canvas'); c.width = w; c.height = h; c.getContext('2d').drawImage(im, 0, 0, w, h);
+      let data; try { data = c.toDataURL('image/jpeg', .82); } catch (e) { data = fr.result; }
+      res({ data, color: colorFromImage(im) || hashColor(file.name) });
+    };
+    fr.onerror = () => res(null); fr.readAsDataURL(file);
+  });
+}
+function openEdit(i) {
+  const s = openSheet(`${barHTML('Edit')}<div class="sh-body">${formHTML(i)}</div>`);
+  bindForm(s, i, async it => { await saveItem(it); closeSheet(); rerenderAll(); toast('Saved'); });
+}
+
+/* ---------------- internet data (TMDB + OMDb) ---------------- */
+async function tmdb(path, params = {}) {
+  const key = (S.tmdb || '').trim(); if (!key) throw new Error('nokey');
+  const u = new URL('https://api.themoviedb.org/3' + path);
+  Object.entries(params).forEach(([k, v]) => u.searchParams.set(k, v));
+  const h = { accept: 'application/json' };
+  if (key.length > 40) h.Authorization = 'Bearer ' + key; else u.searchParams.set('api_key', key);
+  let r; try { r = await fetch(u.toString(), { headers: h }); } catch (e) { throw new Error('net'); }
+  if (r.status === 401) throw new Error('badkey'); if (!r.ok) throw new Error('http');
+  return r.json();
+}
+function errText(e) { return { nokey: 'Add your free TMDB key in Settings first.', badkey: 'TMDB did not accept the key. Check it in Settings.', net: 'Could not reach the internet. Check your connection and try again.', http: 'TMDB had a problem. Try again in a minute.' }[e.message] || 'Something went wrong. Try again.'; }
+function shortPlot(t) {
+  t = (t || '').replace(/\s+/g, ' ').trim(); if (t.length <= 260) return t;
+  const cut = t.slice(0, 260); const m = Math.max(cut.lastIndexOf('. '), cut.lastIndexOf('। '));
+  return m > 110 ? cut.slice(0, m + 1) : cut.replace(/\s+\S*$/, '') + '…';
+}
+async function imdbFor(id) {
+  if (!id || !(S.omdb || '').trim()) return null;
+  try { const r = await fetch(`https://www.omdbapi.com/?i=${encodeURIComponent(id)}&apikey=${encodeURIComponent(S.omdb.trim())}`); const j = await r.json(); return j && j.imdbRating && j.imdbRating !== 'N/A' ? parseFloat(j.imdbRating) : null; } catch (e) { return null; }
+}
+async function fetchDetails(mt, id) {
+  const d = await tmdb(`/${mt}/${id}`, { language: 'en-US', append_to_response: mt === 'movie' ? 'credits,translations' : 'credits,external_ids,translations' });
+  const isMovie = mt === 'movie';
+  const date = isMovie ? d.release_date : d.first_air_date;
+  const countries = isMovie ? [...(d.origin_country || []), ...(d.production_countries || []).map(c => c.iso_3166_1)] : (d.origin_country || []);
+  let lang = d.original_language || 'other'; if (lang === 'bn') lang = countries.includes('BD') ? 'bn-bd' : 'bn-in';
+  const crew = (d.credits && d.credits.crew) || [];
+  let director = isMovie ? crew.filter(c => c.job === 'Director').map(c => c.name) : (d.created_by || []).map(c => c.name);
+  if (!director.length) director = crew.filter(c => c.job === 'Director').map(c => c.name);
+  const bn = ((d.translations && d.translations.translations) || []).find(t => t.iso_639_1 === 'bn' && t.data && t.data.overview);
+  const imdbId = isMovie ? d.imdb_id : (d.external_ids && d.external_ids.imdb_id);
+  return {
+    tmdbId: d.id, tmdbType: mt,
+    title: isMovie ? d.title : d.name, originalTitle: isMovie ? d.original_title : d.original_name,
+    year: date ? +date.slice(0, 4) : null, lang,
+    genres: normGenres((d.genres || []).map(g => g.name)),
+    director: [...new Set(director)].slice(0, 3),
+    cast: ((d.credits && d.credits.cast) || []).slice(0, 8).map(c => c.name),
+    runtime: isMovie ? (d.runtime || null) : ((d.episode_run_time || [])[0] || null),
+    seasons: isMovie ? null : (d.number_of_seasons || null),
+    plot: shortPlot(bn ? bn.data.overview : d.overview),
+    poster: d.poster_path ? 'https://image.tmdb.org/t/p/w342' + d.poster_path : '',
+    tmdbRating: d.vote_average ? Math.round(d.vote_average * 10) / 10 : null,
+    imdbId: imdbId || '', imdbRating: await imdbFor(imdbId)
+  };
+}
+async function posterColor(url) { if (!url) return null; const im = await loadImage(url, true); return im ? colorFromImage(im) : null; }
+
+/* ---------------- add sheet ---------------- */
+let addState = { tab: 'online', q: '', kind: 'multi', results: [], pick: null };
+function openAdd() {
+  addState = { tab: S.tmdb ? 'online' : 'online', q: '', kind: 'multi', results: [], pick: null };
+  const s = openSheet(`${barHTML('Add a title')}<div class="sh-body" id="addBody"></div>`, { add: 1 });
+  renderAdd(s);
+}
+function renderAdd(s) {
+  const b = $('#addBody', s);
+  const tabs = `<div class="seg" role="group" aria-label="How to add"><button data-act="addTab" data-t="online" aria-pressed="${addState.tab === 'online'}">Find online</button><button data-act="addTab" data-t="manual" aria-pressed="${addState.tab === 'manual'}">Add by hand</button></div>`;
+  if (addState.tab === 'manual') {
+    b.innerHTML = tabs + `<p class="hint">For Bangladeshi natok or anything not found online. Take a photo of the poster or pick one from your gallery.</p>` + formHTML({ type: firstType('natok'), status: 'watched', lang: firstLang('bn-bd') });
+    bindForm(s, { id: newId(), addedAt: Date.now(), type: firstType('natok'), status: 'watched', lang: firstLang('bn-bd'), watchDates: [] }, async it => {
+      if (it.status === 'watched' && !it.watchDates.length) it.watchDates = [today()];
+      it.addedAt = Date.now(); await saveItem(it); afterAdd(it);
+    });
+    return;
+  }
+  if (!S.tmdb) {
+    b.innerHTML = tabs + `<div class="card"><strong>Connect the free movie database once</strong><p class="hint">MovieShelf gets posters, cast, director, story and ratings from TMDB. It needs a free key from you.</p>${keyStepsHTML()}<div class="btnrow"><button class="btn" data-act="goSettings">Open Settings</button><button class="btn plain" data-act="addTab" data-t="manual">Add by hand instead</button></div></div>`;
+    return;
+  }
+  if (addState.pick) { renderPick(b, tabs); return; }
+  b.innerHTML = tabs + `
+    <form id="olform" class="search" style="display:block"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L20 20"/></svg><label class="vh" for="olq">Movie or series name</label><input id="olq" type="search" enterkeyhint="search" placeholder="Type a movie or series name" value="${esc(addState.q)}" autocomplete="off"></form>
+    <div class="seg sm" role="group" aria-label="Look for"><button data-act="addKind" data-k="multi" aria-pressed="${addState.kind === 'multi'}">Everything</button><button data-act="addKind" data-k="movie" aria-pressed="${addState.kind === 'movie'}">Movies</button><button data-act="addKind" data-k="tv" aria-pressed="${addState.kind === 'tv'}">Series</button></div>
+    <div id="olres"></div>`;
+  const inp = $('#olq', b); let tmr;
+  const go = () => { clearTimeout(tmr); addState.q = inp.value; if (inp.value.trim().length < 2) { $('#olres', b).innerHTML = ''; return; } doOnlineSearch(b); };
+  inp.addEventListener('input', () => { clearTimeout(tmr); tmr = setTimeout(go, 450); });
+  $('#olform', b).addEventListener('submit', e => { e.preventDefault(); inp.blur(); go(); });
+  if (addState.results.length) showOnline(b); else if (addState.q) go();
+  setTimeout(() => inp.focus(), 300);
+}
+async function doOnlineSearch(b) {
+  const box = $('#olres', b); box.innerHTML = '<div class="loading"><span class="spinner"></span>Searching…</div>';
+  try {
+    const j = await tmdb('/search/' + addState.kind, { query: addState.q, include_adult: 'false', language: 'en-US' });
+    addState.results = (j.results || []).map(r => Object.assign(r, { media_type: r.media_type || (addState.kind === 'tv' ? 'tv' : 'movie') })).filter(r => r.media_type === 'movie' || r.media_type === 'tv').slice(0, 20);
+    showOnline(b);
+  } catch (e) { box.innerHTML = `<p class="hint">${errText(e)}</p>`; }
+}
+function showOnline(b) {
+  const box = $('#olres', b); if (!box) return;
+  if (!addState.results.length) { box.innerHTML = `<p class="hint">Nothing found. Try another spelling, or use “Add by hand”.</p>`; return; }
+  box.innerHTML = `<div class="list">${addState.results.map((r, k) => {
+    const title = r.title || r.name; const yr = (r.release_date || r.first_air_date || '').slice(0, 4);
+    const have = ITEMS.some(i => i.tmdbId === r.id && i.tmdbType === r.media_type);
+    const fake = { title, year: yr, type: r.media_type === 'tv' ? 'series' : 'movie', poster: r.poster_path ? 'https://image.tmdb.org/t/p/w154' + r.poster_path : '' };
+    return `<button class="li" data-act="pick" data-k="${k}"><div class="cv">${posterHTML(fake)}</div><div><div class="t">${esc(title)}</div><div class="s">${esc([yr, r.media_type === 'tv' ? 'TV Series' : 'Movie', langName(r.original_language)].filter(Boolean).join(' · '))}</div><div class="s">${esc((r.overview || '').slice(0, 70))}</div></div><div class="r">${have ? 'On shelf' : ''}</div></button>`;
+  }).join('')}</div>`;
+}
+function renderPick(b, tabs) {
+  const r = addState.pick; const title = r.title || r.name; const yr = (r.release_date || r.first_air_date || '').slice(0, 4);
+  const fake = { title, year: yr, type: r._type, poster: r.poster_path ? 'https://image.tmdb.org/t/p/w154' + r.poster_path : '' };
+  b.innerHTML = tabs + `<div class="res-pick">
+    <div class="top2"><div class="cv">${posterHTML(fake)}</div><div><div style="font-weight:700;font-size:17px">${esc(title)}</div><div class="hint">${esc([yr, langName(r.original_language)].filter(Boolean).join(' · '))}</div></div></div>
+    <div><p class="sec-title">Have you seen it?</p><div class="seg"><button data-act="pickStatus" data-v="watched" aria-pressed="${r._status === 'watched'}">Watched</button><button data-act="pickStatus" data-v="watchlist" aria-pressed="${r._status === 'watchlist'}">Want to watch</button></div></div>
+    <div><p class="sec-title">Keep it under</p><div class="chips">${S.types.map(t => `<button class="chip ${r._type === t.key ? 'ac' : ''}" data-act="pickType" data-v="${esc(t.key)}" aria-pressed="${r._type === t.key}">${esc(t.label)}</button>`).join('')}</div></div>
+    <div class="btnrow" id="pickBtns"><button class="btn" data-act="pickAdd">Add to shelf</button><button class="btn plain" data-act="pickCancel">Back to results</button></div>
+  </div>`;
+}
+async function addPicked(s) {
+  const r = addState.pick; const dup = ITEMS.find(i => i.tmdbId === r.id && i.tmdbType === r.media_type);
+  if (dup) { toast('Already on your shelf'); closeAll(); openDetail(dup.id); return; }
+  $('#pickBtns', s).innerHTML = '<div class="loading"><span class="spinner"></span>Getting poster, cast and story…</div>';
+  try {
+    const d = await fetchDetails(r.media_type, r.id);
+    const it = Object.assign({ id: newId(), addedAt: Date.now(), favorite: false, myRating: 0, note: '' }, d, { type: r._type, status: r._status });
+    it.watchCount = it.status === 'watched' ? 1 : 0; it.watchDates = it.status === 'watched' ? [today()] : [];
+    if (it.type !== 'movie' && it.status === 'watched' && it.seasons) it.seasonsWatched = it.seasons;
+    it.spineColor = (await posterColor(it.poster)) || hashColor(it.title);
+    await saveItem(it); afterAdd(it);
+  } catch (e) { $('#pickBtns', s).innerHTML = `<p class="hint">${errText(e)}</p><button class="btn" data-act="pickAdd">Try again</button>`; }
+}
+function afterAdd(it) { closeAll(); if (S.view !== 'home') showView('home'); else renderHome(); setTimeout(() => openDetail(it.id), 300); toast('Added to your shelf'); }
+async function refreshFromNet(i) {
+  toast('Updating…');
+  try {
+    const d = await fetchDetails(i.tmdbType || (i.type === 'movie' ? 'movie' : 'tv'), i.tmdbId);
+    const keep = { title: i.title, plot: i.plot };
+    Object.assign(i, d, { title: keep.title || d.title, plot: keep.plot || d.plot });
+    if (!i.colorManual) i.spineColor = (await posterColor(i.poster)) || i.spineColor;
+    await saveItem(i); rerenderAll(); toast('Updated');
+  } catch (e) { toast(errText(e)); }
+}
+
+/* ---------------- stats ---------------- */
+function watchYears(i) {
+  if (i.status !== 'watched') return [];
+  const d = (i.watchDates || []).map(x => +String(x).slice(0, 4)).filter(Boolean);
+  const extra = Math.max(0, (i.watchCount || 1) - d.length);
+  const fallback = new Date(i.addedAt || Date.now()).getFullYear();
+  return d.concat(Array(extra).fill(d.length ? d[d.length - 1] : fallback));
+}
+function hbars(rows, act) {
+  const max = Math.max(1, ...rows.map(r => r[1]));
+  return `<div class="hbars">${rows.map(([k, n, key]) => `<button class="hb" ${act ? `data-act="${act}" ${act === 'person' ? `data-name="${esc(k)}"` : `data-key="${esc(key)}"`}` : ''}><span>${esc(k)}</span><span class="tr"><i style="width:${(n / max * 100).toFixed(1)}%"></i></span><b>${n}</b></button>`).join('')}</div>`;
+}
+function renderStats() {
+  const el = $('#view-stats');
+  if (!ITEMS.length) { el.innerHTML = `<div class="empty"><h2>No numbers yet</h2><p>Your counts appear here once you add titles.</p></div>`; return; }
+  const watched = ITEMS.filter(i => i.status === 'watched');
+  const perYear = new Map(); ITEMS.forEach(i => watchYears(i).forEach(y => perYear.set(y, (perYear.get(y) || 0) + 1)));
+  const ys = []; const minY = Math.min(THIS_YEAR, ...perYear.keys()); for (let y = Math.max(minY, THIS_YEAR - 7); y <= THIS_YEAR; y++) ys.push(y);
+  const maxY = Math.max(1, ...ys.map(y => perYear.get(y) || 0));
+  const sessions = ITEMS.reduce((n, i) => n + watchYears(i).length, 0);
+  const cnt = (f, list = ITEMS) => { const m = new Map(); list.forEach(i => f(i).forEach(v => v && m.set(v, (m.get(v) || 0) + 1))); return [...m.entries()].sort((a, b) => b[1] - a[1]); };
+  const rated = ITEMS.filter(i => i.myRating); const avg = rated.length ? (rated.reduce((n, i) => n + i.myRating, 0) / rated.length).toFixed(1) : '–';
+  const rewatched = ITEMS.filter(i => (i.watchCount || 0) > 1).sort((a, b) => b.watchCount - a.watchCount).slice(0, 6);
+  el.innerHTML = `<div class="stack">
+    <div class="tiles">
+      <div class="tile"><b>${ITEMS.reduce((n, i) => n + watchYears(i).filter(y => y === THIS_YEAR).length, 0)}</b><span>Watched in ${THIS_YEAR}</span></div>
+      <div class="tile"><b>${watched.length}</b><span>Titles watched</span></div>
+      <div class="tile"><b>${ITEMS.filter(i => i.status === 'watchlist').length}</b><span>Want to watch</span></div>
+      <div class="tile"><b>${avg}</b><span>My average rating</span></div>
+    </div>
+    <div class="panel"><h3>Watched per year</h3>
+      <div class="vbars">${ys.map(y => { const n = perYear.get(y) || 0; const h = n / maxY * 100; return `<div class="vbar"><em style="bottom:calc(${h}% + 3px)">${n || ''}</em><i style="height:${h}%"></i></div>`; }).join('')}</div>
+      <div class="vlabels">${ys.map(y => `<span>${String(y).slice(2) === String(THIS_YEAR).slice(2) ? y : "'" + String(y).slice(2)}</span>`).join('')}</div>
+      <p class="hint">${sessions} viewings in total, rewatches included.</p></div>
+    <div class="panel"><h3>By type</h3>${hbars(Object.keys(TYPES).map(t => [TYPE_PL[t], ITEMS.filter(i => i.type === t).length, 'type:' + t]), 'openList')}</div>
+    <div class="panel"><h3>By language</h3>${hbars(cnt(i => [i.lang]).map(([l, n]) => [langName(l), n, 'lang:' + l]), 'openList')}</div>
+    <div class="panel"><h3>Top categories</h3>${hbars(cnt(i => i.genres || []).slice(0, 8).map(([g, n]) => [g, n, 'genre:' + g]), 'openList')}</div>
+    <div class="panel"><h3>Actors you watch most</h3>${hbars(cnt(i => i.cast || []).slice(0, 8), 'person')}</div>
+    ${rewatched.length ? `<div class="panel"><h3>Watched more than once</h3><div class="list">${rewatched.map(i => listRowHTML(i, i.watchCount + '×')).join('')}</div></div>` : ''}
+  </div>`;
+}
+
+/* ---------------- settings ---------------- */
+function keyStepsHTML() {
+  return `<ol><li>Open <a href="https://www.themoviedb.org/signup" target="_blank" rel="noopener">themoviedb.org</a> and make a free account.</li><li>Go to <a href="https://www.themoviedb.org/settings/api" target="_blank" rel="noopener">Settings → API</a> and ask for a key (choose “Developer”, personal use).</li><li>Copy the <strong>API Key</strong> and paste it in MovieShelf Settings.</li></ol>`;
+}
+function renderSettings() {
+  Object.keys(FONTS).forEach(loadFont);
+  const el = $('#view-settings');
+  const themeCard = (id, t) => {
+    const v = t ? t.v : null; const pal = ['#8b1e2d', '#1d4e89', '#e0b04a', '#0f6b5c', '#6a2c91', '#c44536'];
+    const mini = v ? `<div class="mini" style="background:${v.wall}"><div class="sp" style="background:${v.cab}">${pal.map((c, k) => `<i style="background:${c};height:${26 + (k % 3) * 4}px"></i>`).join('')}</div><div class="pl" style="background:${v.wood}"></div></div>`
+      : `<div class="mini" style="background:linear-gradient(90deg,${THEMES.oak.v.wall} 50%,${THEMES.cinema.v.wall} 50%)"><div class="sp" style="background:linear-gradient(90deg,${THEMES.oak.v.cab} 50%,${THEMES.cinema.v.cab} 50%)">${pal.map((c, k) => `<i style="background:${c};height:${26 + (k % 3) * 4}px"></i>`).join('')}</div><div class="pl" style="background:linear-gradient(90deg,${THEMES.oak.v.wood} 50%,${THEMES.cinema.v.wood} 50%)"></div></div>`;
+    return `<button class="th" data-act="theme" data-t="${id}" aria-pressed="${S.theme === id}">${mini}<span class="nm">${t ? esc(t.name) : 'Auto'} <small>${t ? (t.dark ? 'dark' : 'light') : 'follows phone'}</small></span></button>`;
+  };
+  const bk = S.lastBackup ? new Date(S.lastBackup).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'never';
+  el.innerHTML = `<div class="stack">
+    <div class="panel"><h3>Theme</h3><div class="themes">${themeCard('auto', null)}${Object.entries(THEMES).map(([k, t]) => themeCard(k, t)).join('')}</div></div>
+    <div class="panel"><h3>Font</h3><div class="fonts">${Object.entries(FONTS).map(([k, f]) => `<button class="fo" data-act="font" data-f="${k}" aria-pressed="${S.font === k}"><span class="smp" style="font-family:${f.css},'Hind Siliguri',sans-serif">Interstellar · আমার তাক</span><span class="nm">${esc(f.name)}</span></button>`).join('')}</div></div>
+    <div class="panel"><h3>Types, categories &amp; languages</h3><p class="hint">Add new ones, rename them or delete them. Changes apply to every title.</p><div class="btnrow"><button class="btn plain" data-act="manage" data-tab="genres">Categories</button><button class="btn plain" data-act="manage" data-tab="types">Types</button><button class="btn plain" data-act="manage" data-tab="langs">Languages</button></div></div>
+    <div class="panel"><h3>Shelves</h3><p class="hint">Choose which shelves show on the home screen and in what order.</p><div class="btnrow"><button class="btn plain" data-act="arrange">Arrange shelves</button></div></div>
+    <div class="panel"><h3>Movie database keys</h3>
+      <p class="hint">TMDB gives posters, cast, director and story. OMDb (optional) adds the IMDb rating. Keys stay on this phone.</p>
+      <label class="fld" for="k-tmdb"><span>TMDB API key</span><input id="k-tmdb" type="text" autocomplete="off" spellcheck="false" value="${esc(S.tmdb)}" placeholder="Paste your TMDB key"></label>
+      <details><summary class="hint" style="cursor:pointer">How to get a free TMDB key</summary><div class="card" style="margin-top:8px">${keyStepsHTML()}</div></details>
+      <label class="fld" for="k-omdb"><span>OMDb API key (for IMDb rating)</span><input id="k-omdb" type="text" autocomplete="off" spellcheck="false" value="${esc(S.omdb)}" placeholder="Optional"></label>
+      <details><summary class="hint" style="cursor:pointer">How to get a free OMDb key</summary><div class="card" style="margin-top:8px"><ol><li>Open <a href="https://www.omdbapi.com/apikey.aspx" target="_blank" rel="noopener">omdbapi.com/apikey.aspx</a>.</li><li>Choose FREE (1,000 a day), write your email.</li><li>Open the email, tap the link to turn the key on, then paste the key here.</li></ol></div></details>
+      <div class="btnrow"><button class="btn" data-act="saveKeys">Save keys</button><button class="btn plain" data-act="testKey">Test TMDB key</button></div>
+    </div>
+    <div class="panel"><h3>Backup &amp; export</h3>
+      <p class="hint">Last backup: ${bk}. Your shelf lives on this phone, so keep a backup in Google Drive.</p>
+      <div class="btnrow"><button class="btn" data-act="backupShare">Save backup to Google Drive</button><button class="btn plain" data-act="backupDl">Download backup</button></div>
+      <p class="hint">“Save to Google Drive” opens your phone's share menu. Pick Drive there.</p>
+      <div class="btnrow"><button class="btn plain" data-act="restore">Restore from backup</button><button class="btn plain" data-act="csv">Export CSV (Excel)</button></div>
+    </div>
+    <div class="panel"><h3>Examples</h3><div class="btnrow"><button class="btn plain" data-act="examplesLoad">Show example titles</button><button class="btn plain" data-act="examplesRemove">Remove examples</button></div></div>
+    <div class="panel"><h3>Delete everything</h3><p class="hint">Removes every title from this phone. Make a backup first.</p><div class="btnrow"><button class="btn danger" data-act="wipe">Delete all titles</button></div></div>
+    <p class="hint" style="text-align:center">MovieShelf ${APP_VERSION} · ${ITEMS.length} titles · Movie data from TMDB</p>
+  </div>`;
+}
+function openArrange() {
+  const s = openSheet(`${barHTML('Arrange shelves')}<div class="sh-body"><p class="hint">Tick the shelves you want on the home screen. Use the arrows to move them up or down.</p><div class="btnrow"><button class="btn plain" data-act="manage" data-tab="genres">Edit categories</button><button class="btn plain" data-act="manage" data-tab="types">Edit types</button><button class="btn plain" data-act="manage" data-tab="langs">Edit languages</button></div><div class="arr" id="arrList"></div></div>`, { arrange: 1 });
+  renderArrange(s);
+}
+function renderArrange(s) {
+  const defs = orderedDefs();
+  $('#arrList', s).innerHTML = defs.map((d, k) => {
+    const n = d.key === 'year:auto' ? '' : ITEMS.filter(d.test).length;
+    const on = !isHidden(d.key);
+    return `<div class="arr-row ${on ? '' : 'off'}"><input type="checkbox" id="ar-${k}" data-act="arrToggle" data-key="${esc(d.key)}" ${on ? 'checked' : ''}><label for="ar-${k}">${esc(d.label)} <small>${n}</small></label><button class="iconbtn" data-act="arrMove" data-key="${esc(d.key)}" data-d="-1" aria-label="Move up" ${k === 0 ? 'disabled' : ''}><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 15l6-6 6 6"/></svg></button><button class="iconbtn" data-act="arrMove" data-key="${esc(d.key)}" data-d="1" aria-label="Move down" ${k === defs.length - 1 ? 'disabled' : ''}><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></button></div>`;
+  }).join('');
+}
+function saveShelves() { LS.set('shelves', S.shelves); }
+
+
+/* ---------------- manage types / categories / languages ---------------- */
+let MG = { tab: 'genres', edit: null, del: null };
+const MG_TXT = { genres: { one: 'category', add: 'New category name' }, types: { one: 'type', add: 'New type, e.g. Web Series, Documentary' }, langs: { one: 'language', add: 'New language' } };
+function mgRows() {
+  if (MG.tab === 'genres') return allGenres().map(g => ({ key: g, label: g, n: ITEMS.filter(i => (i.genres || []).some(x => sameName(x, g))).length }));
+  if (MG.tab === 'types') return S.types.map(t => ({ key: t.key, label: t.label, n: ITEMS.filter(i => i.type === t.key).length }));
+  return S.langs.map(l => ({ key: l.key, label: l.label, n: ITEMS.filter(i => i.lang === l.key).length }));
+}
+function openManage(tab) {
+  MG = { tab: tab || 'genres', edit: null, del: null };
+  const s = openSheet(`${barHTML('Edit lists')}<div class="sh-body" id="mgBody"></div>`, { manage: 1 });
+  s.addEventListener('submit', e => {
+    e.preventDefault(); const f = e.target;
+    if (f.id === 'mgAdd') { const v = $('#mgNew', s).value; const r = MG.tab === 'genres' ? addGenre(v) : MG.tab === 'types' ? addType(v) : addLang(v); if (!r) { toast('Write a name first'); return; } toast('Added'); afterListChange(s); }
+    if (f.dataset.ren) { mgRename(f.dataset.ren, $('#mgRen', s).value); MG.edit = null; afterListChange(s); }
+  });
+  renderManage(s);
+}
+function renderManage(s) {
+  const t = MG_TXT[MG.tab]; const rows = mgRows();
+  const pencil = '<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>';
+  const bin = '<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>';
+  const pool = MG.tab === 'types' ? S.types : MG.tab === 'langs' ? S.langs : [];
+  $('#mgBody', s).innerHTML = `
+    <div class="seg" role="group" aria-label="List"><button data-act="mgTab" data-tab="genres" aria-pressed="${MG.tab === 'genres'}">Categories</button><button data-act="mgTab" data-tab="types" aria-pressed="${MG.tab === 'types'}">Types</button><button data-act="mgTab" data-tab="langs" aria-pressed="${MG.tab === 'langs'}">Languages</button></div>
+    <form id="mgAdd" class="addrow" autocomplete="off"><label class="vh" for="mgNew">${esc(t.add)}</label><input id="mgNew" type="text" placeholder="${esc(t.add)}"><button class="btn" type="submit">Add</button></form>
+    <p class="hint">${rows.length} ${t.one === 'category' ? 'categories' : t.one + 's'}. Tap ✎ to rename, the bin to delete.</p>
+    <div class="mg-list">${rows.map(r => {
+      if (MG.edit === r.key) return `<form class="mg-row wide" data-ren="${esc(r.key)}"><div class="addrow"><label class="vh" for="mgRen">New name</label><input id="mgRen" type="text" value="${esc(r.label)}" autocomplete="off"><button class="btn" type="submit">Save</button><button class="btn plain" type="button" data-act="mgCancel">Cancel</button></div></form>`;
+      if (MG.del === r.key) {
+        const others = pool.filter(x => x.key !== r.key);
+        const move = MG.tab !== 'genres' && r.n ? `<label class="hint" for="mgMove">Move its ${r.n} title${r.n > 1 ? 's' : ''} to</label><select id="mgMove">${others.map(x => `<option value="${esc(x.key)}" ${x.key === 'other' ? 'selected' : ''}>${esc(x.label)}</option>`).join('')}</select>` : '';
+        const msg = MG.tab === 'genres' ? (r.n ? `Delete “${esc(r.label)}”? It will be removed from ${r.n} title${r.n > 1 ? 's' : ''}. The titles stay.` : `Delete “${esc(r.label)}”?`) : `Delete “${esc(r.label)}”?`;
+        return `<div class="mg-row wide"><div class="mg-ask"><strong>${msg}</strong>${move}<div class="btnrow"><button class="btn danger armed" data-act="mgDelOk" data-key="${esc(r.key)}">Delete</button><button class="btn plain" data-act="mgCancel">Cancel</button></div></div></div>`;
+      }
+      return `<div class="mg-row"><span class="nm">${esc(r.label)}</span><span class="n">${r.n} title${r.n === 1 ? '' : 's'}</span><button class="iconbtn" data-act="mgEdit" data-key="${esc(r.key)}" aria-label="Rename ${esc(r.label)}">${pencil}</button><button class="iconbtn" data-act="mgDel" data-key="${esc(r.key)}" aria-label="Delete ${esc(r.label)}">${bin}</button></div>`;
+    }).join('')}</div>`;
+  if (MG.edit) { const i = $('#mgRen', s); if (i) { i.focus(); i.select(); } }
+}
+function renameShelfKey(oldK, newK) {
+  const fix = arr => [...new Set(arr.map(k => k === oldK ? newK : k))];
+  S.shelves.order = fix(S.shelves.order); S.shelves.hidden = fix(S.shelves.hidden); saveShelves();
+}
+function dropShelfKey(k) { S.shelves.order = S.shelves.order.filter(x => x !== k); S.shelves.hidden = S.shelves.hidden.filter(x => x !== k); saveShelves(); }
+async function mgRename(key, name) {
+  name = String(name || '').trim(); if (!name) { toast('Name cannot be empty'); return; }
+  if (MG.tab === 'genres') {
+    const changed = [];
+    ITEMS.forEach(i => { if ((i.genres || []).some(x => sameName(x, key))) { const g = i.genres.map(x => sameName(x, key) ? name : x); i.genres = g.filter((x, k) => g.findIndex(y => sameName(y, x)) === k); changed.push(i); } });
+    S.genreList = S.genreList.map(x => sameName(x, key) ? name : x).filter((x, k, a) => a.findIndex(y => sameName(y, x)) === k);
+    if (!S.genreList.some(x => sameName(x, name))) S.genreList.push(name);
+    saveLists(); renameShelfKey('genre:' + key, 'genre:' + name); await DB.putMany(changed);
+  } else if (MG.tab === 'types') {
+    const t = S.types.find(x => x.key === key); if (!t) return; t.label = name; t.pl = name; t.spine = name.toUpperCase().slice(0, 10); saveLists();
+  } else {
+    const l = S.langs.find(x => x.key === key); if (!l) return; l.label = name; saveLists();
+  }
+  toast('Renamed');
+}
+async function mgDelete(key, s) {
+  const changed = [];
+  if (MG.tab === 'genres') {
+    ITEMS.forEach(i => { if ((i.genres || []).some(x => sameName(x, key))) { i.genres = i.genres.filter(x => !sameName(x, key)); changed.push(i); } });
+    S.genreList = S.genreList.filter(x => !sameName(x, key)); dropShelfKey('genre:' + key);
+  } else {
+    const pool = MG.tab === 'types' ? S.types : S.langs;
+    if (pool.length < 2) { toast(`Keep at least one ${MG_TXT[MG.tab].one}`); return; }
+    const sel = $('#mgMove', s); const target = sel ? sel.value : pool.find(x => x.key !== key).key;
+    const field = MG.tab === 'types' ? 'type' : 'lang';
+    ITEMS.forEach(i => { if (i[field] === key) { i[field] = target; changed.push(i); } });
+    if (MG.tab === 'types') { S.types = S.types.filter(x => x.key !== key); dropShelfKey('type:' + key); if (S.filter === key) S.filter = 'all'; }
+    else { S.langs = S.langs.filter(x => x.key !== key); dropShelfKey('lang:' + key); }
+  }
+  saveLists(); await DB.putMany(changed); toast('Deleted');
+}
+function afterListChange(s) { renderManage(s); rerenderAll(); SHEETS.forEach(x => { if (x.dataset.arrange) renderArrange(x); }); }
+
+/* ---------------- backup / CSV ---------------- */
+function backupJSON() { return JSON.stringify({ app: 'MovieShelf', version: 1, exportedAt: new Date().toISOString(), settings: { types: S.types, langs: S.langs, genreList: S.genreList, theme: S.theme, font: S.font, shelves: S.shelves, pinned: S.pinned, mode: S.mode, zoom: S.zoom, tmdb: S.tmdb, omdb: S.omdb }, items: ITEMS }, null, 1); }
+const stamp = () => today();
+async function deliver(name, text, mime, share) {
+  const blob = new Blob([text], { type: mime });
+  if (share) {
+    try { const file = new File([blob], name, { type: mime }); if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: name }); return 'ok'; } }
+    catch (e) { if (e && e.name === 'AbortError') return 'cancel'; }
+  }
+  try { const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 5000); return 'ok'; }
+  catch (e) { return 'fail'; }
+}
+function csvText() {
+  const cols = ['Title', 'Original title', 'Type', 'Status', 'Release year', 'Language', 'Categories', 'Director / creator', 'Cast', 'IMDb rating', 'My rating (/10)', 'Favorite', 'Times watched', 'Watch dates', 'Seasons', 'Seasons watched', 'Added on', 'My note', 'Story'];
+  const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+  const rows = sortList(ITEMS).map(i => [i.title, i.originalTitle, typeName(i.type), i.status === 'watched' ? 'Watched' : 'Want to watch', i.year, langName(i.lang), (i.genres || []).join('; '), (i.director || []).join('; '), (i.cast || []).join('; '), i.imdbRating, i.myRating || '', i.favorite ? 'Yes' : '', i.watchCount || 0, (i.watchDates || []).join('; '), i.seasons, i.seasonsWatched, new Date(i.addedAt || Date.now()).toISOString().slice(0, 10), i.note, i.plot].map(q).join(','));
+  return '﻿' + [cols.map(q).join(',')].concat(rows).join('\r\n');
+}
+async function restoreFrom(file) {
+  try {
+    const j = JSON.parse(await file.text());
+    if (!j || !Array.isArray(j.items)) throw new Error('bad');
+    const clean = j.items.filter(x => x && x.id && x.title);
+    await DB.putMany(clean);
+    clean.forEach(it => { const k = ITEMS.findIndex(x => x.id === it.id); if (k >= 0) ITEMS[k] = it; else ITEMS.push(it); });
+    const st = j.settings || {};
+    ['theme', 'font', 'shelves', 'pinned', 'mode', 'zoom'].forEach(k => { if (st[k] != null) { S[k] = st[k]; LS.set(k, st[k]); } });
+    if (Array.isArray(st.types) && st.types.length) S.types = st.types; if (Array.isArray(st.langs) && st.langs.length) S.langs = st.langs; if (Array.isArray(st.genreList)) S.genreList = st.genreList; saveLists();
+    if (st.tmdb && !S.tmdb) { S.tmdb = st.tmdb; LS.set('tmdb', st.tmdb); }
+    if (st.omdb && !S.omdb) { S.omdb = st.omdb; LS.set('omdb', st.omdb); }
+    applyLook(); rerenderAll(); if (S.view === 'settings') renderSettings();
+    toast(`Restored ${clean.length} titles`);
+  } catch (e) { toast('That file is not a MovieShelf backup'); }
+}
+
+/* ---------------- examples ---------------- */
+function examples() {
+  const at = d => new Date(d + 'T20:00:00').getTime();
+  const E = (o) => Object.assign({ id: 'ex-' + hash(o.title).toString(36), example: true, status: 'watched', favorite: false, myRating: 0, note: '', poster: '', watchDates: [], seasons: null, seasonsWatched: null, runtime: null, imdbRating: null }, o, { watchCount: o.watchCount ?? (o.status === 'watchlist' ? 0 : (o.watchDates || []).length || 1), addedAt: at(o.added), spineColor: o.spineColor });
+  return [
+    E({ title: 'Interstellar', type: 'movie', year: 2014, lang: 'en', genres: ['Science Fiction', 'Adventure', 'Drama'], director: ['Christopher Nolan'], cast: ['Matthew McConaughey', 'Anne Hathaway', 'Jessica Chastain', 'Michael Caine'], imdbRating: 8.7, runtime: 169, myRating: 10, favorite: true, watchDates: ['2024-03-02', '2025-11-14', '2026-06-20'], spineColor: '#1d3b5c', added: '2024-03-02', plot: 'পৃথিবী বসবাসের অযোগ্য হয়ে উঠছে। মানুষের নতুন ঘর খুঁজতে একদল নভোচারী wormhole পেরিয়ে দূরের ছায়াপথে পাড়ি দেয়।', note: 'Docking scene-এর সময় গায়ের লোম দাঁড়িয়ে গিয়েছিল।' }),
+    E({ title: 'Inception', type: 'movie', year: 2010, lang: 'en', genres: ['Science Fiction', 'Action', 'Thriller'], director: ['Christopher Nolan'], cast: ['Leonardo DiCaprio', 'Joseph Gordon-Levitt', 'Elliot Page', 'Tom Hardy'], imdbRating: 8.8, runtime: 148, myRating: 9, watchDates: ['2024-08-11', '2026-02-09'], spineColor: '#2f3e46', added: '2024-08-11', plot: 'স্বপ্নের ভেতরে ঢুকে গোপন তথ্য চুরি করে কব। এবার তার কাজ উল্টো: একজনের মনে একটা ভাবনা বসিয়ে দিতে হবে।' }),
+    E({ title: 'Shutter Island', type: 'movie', year: 2010, lang: 'en', genres: ['Psychological Thriller', 'Mystery'], director: ['Martin Scorsese'], cast: ['Leonardo DiCaprio', 'Mark Ruffalo', 'Ben Kingsley'], imdbRating: 8.2, runtime: 138, myRating: 8, watchDates: ['2025-01-18'], spineColor: '#4a5a3a', added: '2025-01-18', plot: 'এক দ্বীপের মানসিক হাসপাতাল থেকে নিখোঁজ এক রোগীকে খুঁজতে যান দুই মার্শাল। তদন্ত যত এগোয়, সত্য তত ঘোলাটে হয়।' }),
+    E({ title: 'Drishyam', type: 'movie', year: 2013, lang: 'ml', genres: ['Crime', 'Thriller', 'Drama'], director: ['Jeethu Joseph'], cast: ['Mohanlal', 'Meena', 'Asha Sharath', 'Siddique'], imdbRating: 8.3, runtime: 160, myRating: 9, favorite: true, watchDates: ['2025-05-03'], spineColor: '#7a4419', added: '2025-05-03', plot: 'সাধারণ এক ক্যাবল টিভি ব্যবসায়ী জর্জকুট্টি পরিবারকে বাঁচাতে বুদ্ধি খাটিয়ে পুলিশের তদন্ত ঘুরিয়ে দেয়।' }),
+    E({ title: 'Kumbalangi Nights', type: 'movie', year: 2019, lang: 'ml', genres: ['Drama', 'Comedy'], director: ['Madhu C. Narayanan'], cast: ['Fahadh Faasil', 'Soubin Shahir', 'Shane Nigam', 'Sreenath Bhasi'], myRating: 8, watchDates: ['2026-03-21'], spineColor: '#0b7285', added: '2026-03-21', plot: 'কুম্বালাঙ্গি গ্রামের চার ভাইয়ের অগোছালো সংসার। ভালোবাসা আর ঝগড়ার মধ্য দিয়ে তারা আবার একটা পরিবার হয়ে ওঠে।' }),
+    E({ title: 'Vikram', type: 'movie', year: 2022, lang: 'ta', genres: ['Action', 'Thriller'], director: ['Lokesh Kanagaraj'], cast: ['Kamal Haasan', 'Vijay Sethupathi', 'Fahadh Faasil'], imdbRating: 8.3, runtime: 174, myRating: 8, watchDates: ['2026-07-12'], spineColor: '#8b1e2d', added: '2026-07-12', plot: 'মুখোশধারী একদল খুনিকে ধরতে নামে একটি গোপন দল। তদন্তে বেরিয়ে আসে মাদক চক্র আর এক পুরোনো এজেন্টের রহস্য।' }),
+    E({ title: '3 Idiots', type: 'movie', year: 2009, lang: 'hi', genres: ['Comedy', 'Drama'], director: ['Rajkumar Hirani'], cast: ['Aamir Khan', 'R. Madhavan', 'Sharman Joshi', 'Kareena Kapoor'], imdbRating: 8.4, runtime: 170, myRating: 9, watchDates: ['2024-01-05', '2025-09-30'], spineColor: '#c44536', added: '2024-01-05', plot: 'প্রকৌশল কলেজের তিন বন্ধুর গল্প। মুখস্থ নয়, সত্যিকারের শেখাই যে আসল, সেটা র‍্যাঞ্চো সবাইকে দেখিয়ে দেয়।' }),
+    E({ title: 'Andhadhun', type: 'movie', year: 2018, lang: 'hi', genres: ['Crime', 'Thriller', 'Comedy'], director: ['Sriram Raghavan'], cast: ['Ayushmann Khurrana', 'Tabu', 'Radhika Apte'], imdbRating: 8.2, runtime: 139, myRating: 9, watchDates: ['2026-09-08'], spineColor: '#16151a', added: '2026-09-08', plot: 'অন্ধ সেজে থাকা এক পিয়ানোবাদক ঘটনাচক্রে একটি খুনের সাক্ষী হয়ে পড়ে।' }),
+    E({ title: 'Hawa', type: 'movie', year: 2022, lang: 'bn-bd', genres: ['Drama', 'Mystery', 'Fantasy'], director: ['Mejbaur Rahman Sumon'], cast: ['Chanchal Chowdhury', 'Nazifa Tushi', 'Sariful Razz'], myRating: 8, watchDates: ['2026-01-26'], spineColor: '#1b6ca8', added: '2026-01-26', plot: 'গভীর সমুদ্রে মাছ ধরার ট্রলারের জালে উঠে আসে রহস্যময় এক তরুণী। এরপর জেলেদের মধ্যে শুরু হয় সন্দেহ আর অশান্তি।' }),
+    E({ title: 'Bhooter Bhabishyat', type: 'movie', year: 2012, lang: 'bn-in', genres: ['Comedy', 'Fantasy'], director: ['Anik Dutta'], cast: ['Parambrata Chatterjee', 'Swastika Mukherjee', 'Saswata Chatterjee'], myRating: 8, watchDates: ['2025-04-14'], spineColor: '#5c940d', added: '2025-04-14', plot: 'পুরোনো এক জমিদারবাড়ির ভূতেরা বাড়িটা ভেঙে শপিং মল বানানোর পরিকল্পনা ঠেকাতে একজোট হয়।' }),
+    E({ title: 'Breaking Bad', type: 'series', year: 2008, lang: 'en', genres: ['Crime', 'Drama', 'Thriller'], director: ['Vince Gilligan'], cast: ['Bryan Cranston', 'Aaron Paul', 'Anna Gunn'], imdbRating: 9.5, seasons: 5, seasonsWatched: 5, runtime: 47, myRating: 10, favorite: true, watchDates: ['2024-11-20'], spineColor: '#2d6a4f', added: '2024-11-20', plot: 'cancer ধরা পড়ার পর রসায়নের এক শিক্ষক পরিবারের জন্য টাকা জোগাতে মাদক তৈরির পথে নামেন।' }),
+    E({ title: 'Karagar', type: 'series', year: 2022, lang: 'bn-bd', genres: ['Mystery', 'Thriller'], director: ['Syed Ahmed Shawki'], cast: ['Chanchal Chowdhury', 'Afsana Mimi', 'Intekhab Dinar'], seasons: 2, seasonsWatched: 2, myRating: 8, watchDates: ['2025-12-02'], spineColor: '#3d405b', added: '2025-12-02', plot: 'কারাগারের বহু বছর বন্ধ থাকা এক সেলে হঠাৎ পাওয়া যায় রহস্যময় এক বন্দিকে। সে কে, কোথা থেকে এল, কেউ জানে না।' }),
+    E({ title: 'Bachelor Point', type: 'natok', year: 2019, lang: 'bn-bd', genres: ['Comedy'], director: ['Kajal Arefin Ome'], cast: ['Ziaul Hoque Polash', 'Marzuk Russell', 'Chashi Alam'], myRating: 9, favorite: true, watchDates: ['2025-02-10', '2026-08-15'], spineColor: '#e0b04a', added: '2025-02-10', plot: 'ঢাকার এক ব্যাচেলর বাসায় কয়েকজন তরুণের হাসি-কান্না আর রোজকার ঝামেলার গল্প।', note: 'কাবিলার দৃশ্যগুলো আবার দেখব।' }),
+    E({ title: 'Dark', type: 'series', year: 2017, lang: 'de', genres: ['Science Fiction', 'Mystery'], director: ['Baran bo Odar'], cast: ['Louis Hofmann', 'Lisa Vicari', 'Oliver Masucci'], imdbRating: 8.7, seasons: 3, status: 'watchlist', spineColor: '#264653', added: '2026-10-01', plot: 'জার্মানির ছোট শহর উইন্ডেনে শিশুরা নিখোঁজ হতে থাকে। খোঁজ করতে গিয়ে চারটি পরিবারের সময় পেরোনো গোপন কথা বেরিয়ে আসে।' }),
+    E({ title: 'Oppenheimer', type: 'movie', year: 2023, lang: 'en', genres: ['History', 'Drama'], director: ['Christopher Nolan'], cast: ['Cillian Murphy', 'Emily Blunt', 'Robert Downey Jr.'], imdbRating: 8.3, runtime: 180, status: 'watchlist', spineColor: '#9c4a1a', added: '2026-10-20', plot: 'পারমাণবিক বোমা তৈরির প্রকল্পের প্রধান বিজ্ঞানী রবার্ট ওপেনহাইমারের জীবন আর তাঁর সিদ্ধান্তের ভার।' })
+  ];
+}
+async function loadExamples() { const ex = examples().filter(e => !byId(e.id)); ex.forEach(e => ITEMS.push(e)); await DB.putMany(ex); LS.set('seeded', 1); rerenderAll(); }
+async function removeExamples() { const ex = ITEMS.filter(i => i.example); ITEMS = ITEMS.filter(i => !i.example); await DB.tx(s => ex.forEach(e => s.delete(e.id))); LS.set('seeded', 1); rerenderAll(); if (S.view === 'settings') renderSettings(); toast('Examples removed'); }
+
+/* ---------------- toast ---------------- */
+let toastT; function toast(m) { const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2400); }
+
+/* ---------------- actions ---------------- */
+const armed = new WeakMap();
+function arm(btn, label, fn) {
+  if (armed.get(btn)) { armed.delete(btn); fn(); return; }
+  const old = btn.innerHTML; btn.classList.add('armed'); btn.textContent = label; armed.set(btn, 1);
+  setTimeout(() => { if (armed.get(btn)) { armed.delete(btn); btn.classList.remove('armed'); btn.innerHTML = old; } }, 3500);
+}
+const setZoom = z => { S.zoom = Math.round(Math.max(.6, Math.min(1.7, z)) * 100) / 100; document.documentElement.style.setProperty('--z', S.zoom); $('#zoomRange').value = S.zoom; LS.set('zoom', S.zoom); };
+function sheetOf(el) { return el.closest('.sheet'); }
+const ACT = {
+  nav: b => { closeAll(); showView(b.dataset.view); },
+  add: () => openAdd(),
+  filter: b => { S.filter = b.dataset.f; renderHome(); },
+  mode: b => { S.mode = b.dataset.m; LS.set('mode', S.mode); renderHome(); },
+  zoom: b => setZoom(S.zoom + (+b.dataset.d) * .1),
+  arrange: () => openArrange(),
+  manage: b => openManage(b.dataset.tab),
+  mgTab: b => { MG = { tab: b.dataset.tab, edit: null, del: null }; renderManage(sheetOf(b)); },
+  mgEdit: b => { MG.edit = b.dataset.key; MG.del = null; renderManage(sheetOf(b)); },
+  mgDel: b => { MG.del = b.dataset.key; MG.edit = null; renderManage(sheetOf(b)); },
+  mgCancel: b => { MG.edit = null; MG.del = null; renderManage(sheetOf(b)); },
+  mgDelOk: async b => { const s = sheetOf(b); await mgDelete(b.dataset.key, s); MG.del = null; afterListChange(s); },
+  back: () => closeSheet(),
+  openList: b => openList(b.dataset.key),
+  person: b => openPerson(b.dataset.name),
+  pin: b => { const n = b.dataset.name; S.pinned = S.pinned.includes(n) ? S.pinned.filter(x => x !== n) : S.pinned.concat(n); LS.set('pinned', S.pinned); S.shelves.hidden = S.shelves.hidden.filter(k => k !== 'person:' + n); saveShelves(); toast(S.pinned.includes(n) ? 'Shelf added to home' : 'Shelf removed'); closeSheet(); openPerson(n); renderHome(); },
+  fav: async () => { const i = currentDetail(); i.favorite = !i.favorite; await saveItem(i); rerenderAll(); },
+  status: async () => { const i = currentDetail(); if (i.status === 'watched') { i.status = 'watchlist'; } else { i.status = 'watched'; if (!i.watchCount) { i.watchCount = 1; i.watchDates = [today()]; } } await saveItem(i); rerenderAll(); },
+  again: async () => { const i = currentDetail(); if (i.status !== 'watched') { i.status = 'watched'; i.watchCount = 1; i.watchDates = [today()]; } else { i.watchCount = (i.watchCount || 1) + 1; i.watchDates = (i.watchDates || []).concat(today()); } await saveItem(i); rerenderAll(); toast(`Watched ${i.watchCount} time${i.watchCount > 1 ? 's' : ''}`); },
+  rate: async b => { const i = currentDetail(); const v = +b.dataset.v; i.myRating = i.myRating === v ? 0 : v; await saveItem(i); rerenderAll(); },
+  edit: () => openEdit(currentDetail()),
+  del: b => arm(b, 'Tap again to delete', async () => { const i = currentDetail(); await removeItem(i.id); closeSheet(); rerenderAll(); toast('Deleted'); }),
+  refresh: () => refreshFromNet(currentDetail()),
+  addTab: b => { addState.tab = b.dataset.t; renderAdd(sheetOf(b)); },
+  addKind: b => { addState.kind = b.dataset.k; addState.results = []; renderAdd(sheetOf(b)); },
+  pick: b => { const r = addState.results[+b.dataset.k]; const bd = ITEMS.find(i => i.tmdbId === r.id && i.tmdbType === r.media_type); if (bd) { toast('Already on your shelf'); closeAll(); openDetail(bd.id); return; } r._status = 'watched'; r._type = r.media_type === 'tv' ? (r.original_language === 'bn' && (r.origin_country || []).includes('BD') ? 'natok' : 'series') : 'movie'; r._type = firstType(r._type); addState.pick = r; renderAdd(sheetOf(b)); },
+  pickStatus: b => { addState.pick._status = b.dataset.v; renderAdd(sheetOf(b)); },
+  pickType: b => { addState.pick._type = b.dataset.v; renderAdd(sheetOf(b)); },
+  pickCancel: b => { addState.pick = null; renderAdd(sheetOf(b)); },
+  pickAdd: b => addPicked(sheetOf(b)),
+  goSettings: () => { closeAll(); showView('settings'); },
+  theme: b => { S.theme = b.dataset.t; LS.set('theme', S.theme); applyLook(); renderSettings(); },
+  font: b => { S.font = b.dataset.f; LS.set('font', S.font); applyLook(); renderSettings(); },
+  saveKeys: () => { S.tmdb = $('#k-tmdb').value.trim(); S.omdb = $('#k-omdb').value.trim(); LS.set('tmdb', S.tmdb); LS.set('omdb', S.omdb); toast('Keys saved'); },
+  testKey: async () => { S.tmdb = $('#k-tmdb').value.trim(); LS.set('tmdb', S.tmdb); try { await tmdb('/configuration'); toast('TMDB key works'); } catch (e) { toast(errText(e)); } },
+  backupShare: async () => { const r = await deliver(`MovieShelf-backup-${stamp()}.json`, backupJSON(), 'application/json', true); if (r === 'ok') { S.lastBackup = Date.now(); LS.set('lastBackup', S.lastBackup); renderSettings(); toast('Backup ready'); } else if (r === 'fail') toast('This screen cannot save files. Use the installed app.'); },
+  backupDl: async () => { const r = await deliver(`MovieShelf-backup-${stamp()}.json`, backupJSON(), 'application/json', false); if (r === 'ok') { S.lastBackup = Date.now(); LS.set('lastBackup', S.lastBackup); renderSettings(); } else toast('This screen cannot save files. Use the installed app.'); },
+  restore: () => $('#restoreFile').click(),
+  csv: async () => { const r = await deliver(`MovieShelf-${stamp()}.csv`, csvText(), 'text/csv;charset=utf-8', true); if (r === 'fail') toast('This screen cannot save files. Use the installed app.'); },
+  examplesLoad: async () => { await loadExamples(); toast('Example titles added'); if (S.view === 'settings') renderSettings(); },
+  examplesRemove: () => removeExamples(),
+  wipe: b => arm(b, 'Tap again to delete all', async () => { ITEMS = []; await DB.clear(); LS.set('seeded', 1); rerenderAll(); renderSettings(); toast('All titles deleted'); }),
+  arrToggle: b => { const k = b.dataset.key; S.shelves.hidden = b.checked ? S.shelves.hidden.filter(x => x !== k) : S.shelves.hidden.concat(k); saveShelves(); renderArrange(sheetOf(b)); renderHome(); },
+  arrMove: b => { const keys = orderedDefs().map(d => d.key); const k = keys.indexOf(b.dataset.key); const j = k + (+b.dataset.d); if (j < 0 || j >= keys.length) return; [keys[k], keys[j]] = [keys[j], keys[k]]; S.shelves.order = keys; saveShelves(); renderArrange(sheetOf(b)); renderHome(); }
+};
+document.addEventListener('click', e => {
+  const a = e.target.closest('[data-act]');
+  if (a) { if (a.dataset.act === 'arrToggle') return; if (a.disabled) return; ACT[a.dataset.act] && ACT[a.dataset.act](a, e); return; }
+  const sp = e.target.closest('[data-id]'); if (sp) pullOut(sp);
+});
+document.addEventListener('change', e => { const a = e.target.closest('[data-act="arrToggle"]'); if (a) ACT.arrToggle(a); });
+$('#zoomRange').addEventListener('input', e => setZoom(+e.target.value));
+$('#restoreFile').addEventListener('change', e => { const f = e.target.files[0]; if (f) restoreFrom(f); e.target.value = ''; });
+
+/* pinch to resize the shelves */
+(() => {
+  let d0 = 0, z0 = 1; const box = $('#shelves');
+  const dist = t => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+  box.addEventListener('touchstart', e => { if (e.touches.length === 2) { d0 = dist(e.touches); z0 = S.zoom; } }, { passive: true });
+  box.addEventListener('touchmove', e => { if (e.touches.length === 2 && d0) { e.preventDefault(); setZoom(z0 * dist(e.touches) / d0); } }, { passive: false });
+  box.addEventListener('touchend', () => { d0 = 0; });
+})();
+
+/* ---------------- start ---------------- */
+(async function start() {
+  applyLook();
+  await DB.open();
+  ITEMS = await DB.all();
+  if (!ITEMS.length && !LS.get('seeded', 0)) { ITEMS = examples(); await DB.putMany(ITEMS); LS.set('seeded', 1); }
+  showView('home');
+  if (!FRAMED && 'serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+})();
+})();
+</script>
+</body>
+</html>
