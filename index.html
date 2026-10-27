@@ -285,6 +285,29 @@ main{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 .mg-row.wide{grid-template-columns:minmax(0,1fr)}
 .mg-ask{display:grid;gap:8px;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:10px}
 .mg-ask select{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:8px;font:inherit;font-size:16px;max-width:100%}
+.avrow{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;margin-inline:-4px}
+.avrow::-webkit-scrollbar{display:none}
+.av{flex:0 0 auto;width:80px;display:grid;justify-items:center;align-content:start;gap:3px;border:0;background:none;padding:2px 4px;text-align:center}
+.av .ph{position:relative;width:64px;height:64px;border-radius:50%;overflow:hidden;background:var(--panel-2);border:2px solid var(--line);display:grid;place-items:center;font-family:var(--f-spine);font-weight:500;font-size:20px;color:var(--ink-2)}
+.av.lead .ph{border-color:var(--accent)}
+.av .ph img,.p-ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 20%}
+.av .nm{font-size:12px;font-weight:700;line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.av .ch{font-size:11px;color:var(--ink-2);line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.p-head{display:grid;grid-template-columns:116px minmax(0,1fr);gap:16px;align-items:start}
+.p-ph{position:relative;width:116px;aspect-ratio:2/3;max-width:100%;border-radius:8px;overflow:hidden;background:var(--panel-2);border:1px solid var(--line);display:grid;place-items:center;font-family:var(--f-spine);font-size:34px;color:var(--ink-2);box-shadow:0 10px 22px -12px var(--shadow)}
+.facts{display:grid;gap:8px;font-size:14px}
+.facts div{display:grid;gap:1px}
+.facts small{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+.bio{white-space:pre-line;display:-webkit-box;-webkit-line-clamp:7;-webkit-box-orient:vertical;overflow:hidden}
+.bio.open{display:block}
+.linkbtn{border:0;background:none;color:var(--accent);font-weight:700;padding:4px 0}
+.kf-row{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
+.kf-row::-webkit-scrollbar{display:none}
+.kf{flex:0 0 auto;width:100px;display:grid;gap:4px;align-content:start}
+.kf .cv{position:relative;aspect-ratio:2/3;border-radius:3px;overflow:hidden;box-shadow:0 4px 10px -5px var(--shadow)}
+.kf .cap{font-size:12px;font-weight:700;line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.kf .sub{font-size:11px;color:var(--ink-2)}
+.kf .btn{padding:5px 6px;font-size:12px;border-radius:8px}
 .toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;background:var(--ink);color:var(--panel);padding:10px 16px;border-radius:999px;font-size:14px;font-weight:700;z-index:60;transition:.25s;pointer-events:none;max-width:calc(100% - 32px);text-align:center}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 @media (min-width:700px){ .d-poster{width:160px} .d-head h1{font-size:34px} .tiles{grid-template-columns:repeat(4,1fr)} .themes{grid-template-columns:repeat(4,1fr)} }
@@ -334,7 +357,7 @@ main{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 <script>
 (() => {
 'use strict';
-const APP_VERSION = '1.1.0';
+const APP_VERSION = '1.2.0';
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -354,19 +377,19 @@ const DB = {
       let done = false; const fin = v => { if (!done) { done = true; this.db = v; res(); } };
       setTimeout(() => fin(null), 1500);
       try {
-        const r = indexedDB.open('movieshelf', 1);
-        r.onupgradeneeded = () => r.result.createObjectStore('items', { keyPath: 'id' });
+        const r = indexedDB.open('movieshelf', 2);
+        r.onupgradeneeded = () => { const db = r.result; if (!db.objectStoreNames.contains('items')) db.createObjectStore('items', { keyPath: 'id' }); if (!db.objectStoreNames.contains('people')) db.createObjectStore('people', { keyPath: 'name' }); };
         r.onsuccess = () => fin(r.result); r.onerror = () => fin(null); r.onblocked = () => fin(null);
       } catch (e) { fin(null); }
     });
   },
-  all() {
+  all(store = 'items') {
     if (!this.db) return Promise.resolve([]);
-    return new Promise(res => { try { const q = this.db.transaction('items').objectStore('items').getAll(); q.onsuccess = () => res(q.result || []); q.onerror = () => res([]); } catch (e) { res([]); } });
+    return new Promise(res => { try { const q = this.db.transaction(store).objectStore(store).getAll(); q.onsuccess = () => res(q.result || []); q.onerror = () => res([]); } catch (e) { res([]); } });
   },
-  tx(fn) {
+  tx(fn, store = 'items') {
     if (!this.db) return Promise.resolve();
-    return new Promise(res => { try { const t = this.db.transaction('items', 'readwrite'); fn(t.objectStore('items')); t.oncomplete = res; t.onerror = res; t.onabort = res; } catch (e) { res(); } });
+    return new Promise(res => { try { const t = this.db.transaction(store, 'readwrite'); fn(t.objectStore(store)); t.oncomplete = res; t.onerror = res; t.onabort = res; } catch (e) { res(); } });
   },
   put(it) { return this.tx(s => s.put(it)); },
   putMany(list) { return this.tx(s => list.forEach(it => s.put(it))); },
@@ -374,6 +397,8 @@ const DB = {
   clear() { return this.tx(s => s.clear()); }
 };
 let ITEMS = [];
+const PEOPLE = new Map();
+async function savePerson(rec) { PEOPLE.set(rec.name, rec); await DB.tx(st => st.put(rec), 'people'); }
 const byId = id => ITEMS.find(i => i.id === id);
 const newId = () => 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 async function saveItem(it) { if (it.lang && typeof LANGS !== 'undefined' && !LANGS[it.lang] && S.langs) { S.langs.push({ key: it.lang, label: langName(it.lang) }); saveLists(); } it.updatedAt = Date.now(); const k = ITEMS.findIndex(x => x.id === it.id); if (k >= 0) ITEMS[k] = it; else ITEMS.push(it); await DB.put(it); }
@@ -644,14 +669,112 @@ function openList(key) {
   const { title, list } = listFor(key);
   openSheet(`${barHTML(title)}<div class="sh-body"><p class="hint">${list.length} ${list.length === 1 ? 'title' : 'titles'}</p>${list.length ? gridHTML(list) : '<p class="hint">Nothing here yet.</p>'}</div>`, { list: key });
 }
-function openPerson(name) {
+const initials = n => String(n || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+function infoFor(name) { for (const i of ITEMS) { const c = (i.castInfo || []).concat(i.dirInfo || []).find(x => x.name === name && (x.id || x.photo)); if (c) return c; } return null; }
+function personPhoto(name, fallback) { const P = PEOPLE.get(name); if (P && P.photo) return P.photo; if (fallback) return fallback; const f = infoFor(name); return f ? f.photo : ''; }
+function avatarHTML(name, photo, sub, lead) {
+  const ph = personPhoto(name, photo);
+  return `<button class="av ${lead ? 'lead' : ''}" data-act="person" data-name="${esc(name)}"><span class="ph"><span aria-hidden="true">${esc(initials(name))}</span>${ph ? `<img src="${esc(ph)}" alt="" loading="lazy" onerror="this.remove()">` : ''}</span><span class="nm">${esc(name)}</span>${sub ? `<span class="ch">${esc(sub)}</span>` : ''}</button>`;
+}
+function ageBetween(a, b) { const x = new Date(a + 'T00:00:00'), y = b ? new Date(b + 'T00:00:00') : new Date(); if (isNaN(x)) return null; let n = y.getFullYear() - x.getFullYear(); if (y.getMonth() < x.getMonth() || (y.getMonth() === x.getMonth() && y.getDate() < x.getDate())) n--; return n; }
+const PSTATE = {};
+function personSheetHTML(name) {
   const list = sortList(ITEMS.filter(i => personIn(i, name)));
   const pinned = S.pinned.includes(name);
   const roles = [...new Set(list.map(i => (i.director || []).includes(name) ? 'Director' : 'Cast'))].join(' & ');
-  openSheet(`${barHTML(name)}<div class="sh-body">
-    <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><p class="hint">${esc(roles)} · ${list.length} on your shelf</p><button class="btn ${pinned ? 'plain' : 'ghost'}" data-act="pin" data-name="${esc(name)}">${pinned ? 'Remove shelf from home' : 'Add as a shelf on home'}</button></div>
-    <div class="bay"><div class="row">${list.map(spineHTML).join('')}</div><div class="plank"></div></div>
-    ${gridHTML(list)}</div>`, { person: name });
+  const P = PEOPLE.get(name) || {}; const ph = personPhoto(name);
+  const st = PSTATE[name] || '';
+  const facts = [];
+  if (P.birthday) { const a = ageBetween(P.birthday, P.deathday); facts.push(`<div><small>Born</small><span>${esc(fmtDate(P.birthday))}${a != null && !P.deathday ? ` · age ${a}` : ''}</span></div>`); }
+  if (P.deathday) { const a = ageBetween(P.birthday, P.deathday); facts.push(`<div><small>Died</small><span>${esc(fmtDate(P.deathday))}${a != null && P.birthday ? ` · aged ${a}` : ''}</span></div>`); }
+  if (P.place) facts.push(`<div><small>Birthplace</small><span>${esc(P.place)}</span></div>`);
+  if (P.dept) facts.push(`<div><small>Known for</small><span>${esc(P.dept === 'Acting' ? 'Acting' : P.dept)}</span></div>`);
+  const loading = st === 'loading' ? '<div class="loading"><span class="spinner"></span>Getting photo and life details…</div>' : '';
+  const noInfo = !P.birthday && !P.bio && !P.place && st !== 'loading'
+    ? `<p class="hint">${!S.tmdb ? 'Add your TMDB key in Settings to get the photo, birthday and life story automatically.' : st === 'notfound' ? 'No details found on TMDB for this name. You can add them by hand.' : st === 'error' ? 'Could not reach the internet. Try again later.' : 'No life details yet.'}</p>` : '';
+  const kf = (P.knownFor || []).filter(k => !ITEMS.some(i => i.tmdbId === k.id && i.tmdbType === k.mt));
+  return `${barHTML(name, `<button class="bk" data-act="personEdit" data-name="${esc(name)}" style="justify-content:flex-end">Edit</button>`)}<div class="sh-body">
+    <div class="p-head"><div class="p-ph"><span aria-hidden="true">${esc(initials(name))}</span>${ph ? `<img src="${esc(ph)}" alt="${esc(name)}" onerror="this.remove()">` : ''}</div>
+      <div class="facts"><h1 style="margin:0;font-family:var(--f-spine);font-weight:600;font-size:24px;line-height:1.1">${esc(name)}</h1>${facts.join('')}${loading}</div></div>
+    ${P.bio ? `<div class="blk"><h3>Life story</h3><p class="bio" id="bio">${esc(P.bio)}</p>${P.bio.length > 380 ? '<button class="linkbtn" data-act="bioMore">Read more</button>' : ''}</div>` : noInfo}
+    <div class="btnrow">${S.tmdb ? `<button class="btn plain" data-act="personRefresh" data-name="${esc(name)}">${IC.refresh}Update from internet</button>` : ''}<button class="btn ${pinned ? 'plain' : 'ghost'}" data-act="pin" data-name="${esc(name)}">${pinned ? 'Remove shelf from home' : 'Add as a shelf on home'}</button></div>
+    <div class="blk"><h3>On your shelf · ${list.length}</h3><p class="hint" style="margin-bottom:8px">${esc(roles)}</p>
+    <div class="bay"><div class="row">${list.map(spineHTML).join('')}</div><div class="plank"></div></div></div>
+    ${kf.length ? `<div class="blk"><h3>Well-known work you have not added</h3><div class="kf-row">${kf.slice(0, 12).map(k => `<div class="kf"><div class="cv">${posterHTML({ title: k.title, year: k.year, type: k.mt === 'tv' ? firstType('series') : firstType('movie'), poster: k.poster })}</div><div class="cap">${esc(k.title)}</div><div class="sub">${esc([k.year, k.mt === 'tv' ? 'Series' : 'Movie'].filter(Boolean).join(' · '))}</div><button class="btn ghost" data-act="kfAdd" data-mt="${k.mt}" data-tid="${k.id}">＋ Want to watch</button></div>`).join('')}</div></div>` : ''}
+    ${P.example ? '<p class="hint">Example details.</p>' : P.fetchedAt && !P.manual ? '<p class="hint">Photo and details from TMDB.</p>' : ''}
+  </div>`;
+}
+function openPerson(name) {
+  const s = openSheet(personSheetHTML(name), { person: name });
+  ensurePerson(name, false, s);
+}
+function redrawPerson(name) { SHEETS.forEach(x => { if (x.dataset.person === name) { const t = x.scrollTop; x.innerHTML = personSheetHTML(name); x.scrollTop = t; } }); }
+async function ensurePerson(name, force) {
+  const P = PEOPLE.get(name);
+  if (!S.tmdb) return;
+  if (!force && P && (P.manual || P.example)) return;
+  if (!force && P && P.fetchedAt && Date.now() - P.fetchedAt < 30 * 864e5) return;
+  PSTATE[name] = 'loading'; redrawPerson(name);
+  try {
+    let id = (P && P.id) || (infoFor(name) || {}).id;
+    if (!id) {
+      const r = await tmdb('/search/person', { query: name, include_adult: 'false' });
+      const hit = (r.results || []).find(x => sameName(x.name, name));
+      if (!hit) { PSTATE[name] = 'notfound'; redrawPerson(name); return; }
+      id = hit.id;
+    }
+    const d = await tmdb('/person/' + id, { language: 'en-US', append_to_response: 'combined_credits,translations' });
+    const bn = ((d.translations && d.translations.translations) || []).find(t => t.iso_639_1 === 'bn' && t.data && t.data.biography);
+    const isDir = d.known_for_department === 'Directing';
+    const cc = d.combined_credits || {};
+    let credits = isDir ? (cc.crew || []).filter(c => c.job === 'Director') : (cc.cast || []);
+    credits = credits.filter(c => !c.adult && c.poster_path && (c.media_type === 'movie' || c.media_type === 'tv') && !(c.genre_ids || []).some(g => g === 10767 || g === 10763 || g === 10764))
+      .sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0))
+      .filter((c, k, a) => a.findIndex(x => x.id === c.id && x.media_type === c.media_type) === k).slice(0, 15);
+    const old = P || {};
+    const rec = Object.assign({}, old, {
+      name, id, dept: d.known_for_department || '',
+      photo: old.manualPhoto ? old.photo : (d.profile_path ? 'https://image.tmdb.org/t/p/w300' + d.profile_path : (old.photo || '')),
+      birthday: d.birthday || '', deathday: d.deathday || '', place: d.place_of_birth || '',
+      bio: ((bn && bn.data.biography) || d.biography || '').trim(),
+      knownFor: credits.map(c => ({ id: c.id, mt: c.media_type, title: c.title || c.name, year: (c.release_date || c.first_air_date || '').slice(0, 4), poster: 'https://image.tmdb.org/t/p/w154' + c.poster_path })),
+      fetchedAt: Date.now(), manual: false, example: false
+    });
+    await savePerson(rec); PSTATE[name] = ''; redrawPerson(name); refreshSheets(); if (S.view === 'home') renderHome();
+    if (force) toast('Updated');
+  } catch (e) { PSTATE[name] = 'error'; redrawPerson(name); if (force) toast(errText(e)); }
+}
+function openPersonEdit(name) {
+  const P = PEOPLE.get(name) || {};
+  let photo = personPhoto(name); let photoChanged = false;
+  const s = openSheet(`${barHTML('Edit ' + name)}<div class="sh-body"><form class="form" id="pform" autocomplete="off">
+    <div class="f-photo"><div class="p-ph" id="p-pv" style="width:96px"><span aria-hidden="true">${esc(initials(name))}</span>${photo ? `<img src="${esc(photo)}" alt="" onerror="this.remove()">` : ''}</div>
+      <div class="btns"><label class="btn plain" for="p-file">Choose photo</label><input id="p-file" class="vh" type="file" accept="image/*"><button type="button" class="btn ghost" id="p-clear">Remove photo</button></div></div>
+    <div class="two">${fld('Born on', 'p-born', P.birthday || '', 'date')}${fld('Died on (if)', 'p-died', P.deathday || '', 'date')}</div>
+    ${fld('Birthplace', 'p-place', P.place || '')}
+    <label class="fld" for="p-bio"><span>Life story</span><textarea id="p-bio" style="min-height:160px">${esc(P.bio || '')}</textarea></label>
+    <div class="btnrow"><button class="btn" type="submit">Save</button><button class="btn plain" type="button" data-act="back">Cancel</button></div>
+  </form></div>`);
+  const pv = () => { $('#p-pv', s).innerHTML = `<span aria-hidden="true">${esc(initials(name))}</span>${photo ? `<img src="${esc(photo)}" alt="">` : ''}`; };
+  $('#p-file', s).addEventListener('change', async e => { const f = e.target.files[0]; if (!f) return; const r = await processPhoto(f); if (!r) { toast('Could not read that photo'); return; } photo = r.data; photoChanged = true; pv(); });
+  $('#p-clear', s).addEventListener('click', () => { photo = ''; photoChanged = true; pv(); });
+  $('#pform', s).addEventListener('submit', async e => {
+    e.preventDefault();
+    const rec = Object.assign({ name }, P, { birthday: $('#p-born', s).value, deathday: $('#p-died', s).value, place: $('#p-place', s).value.trim(), bio: $('#p-bio', s).value.trim(), manual: true, example: false });
+    if (photoChanged) { rec.photo = photo; rec.manualPhoto = true; } else if (!rec.photo && photo) rec.photo = photo;
+    await savePerson(rec); closeSheet(); redrawPerson(name); refreshSheets(); toast('Saved');
+  });
+}
+async function addKnown(b) {
+  const mt = b.dataset.mt, id = +b.dataset.tid;
+  if (ITEMS.some(i => i.tmdbId === id && i.tmdbType === mt)) { toast('Already on your shelf'); return; }
+  b.disabled = true; b.textContent = 'Adding…';
+  try {
+    const d = await fetchDetails(mt, id);
+    const it = Object.assign({ id: newId(), addedAt: Date.now(), favorite: false, myRating: 0, note: '' }, d, { type: firstType(mt === 'tv' ? 'series' : 'movie'), status: 'watchlist', watchCount: 0, watchDates: [] });
+    it.spineColor = (await posterColor(it.poster)) || hashColor(it.title);
+    await saveItem(it); rerenderAll(); toast('Added to Want to watch');
+  } catch (e) { b.disabled = false; b.textContent = '＋ Want to watch'; toast(errText(e)); }
 }
 
 /* ---------------- sheets ---------------- */
@@ -674,6 +797,7 @@ function refreshSheets() {
   SHEETS.forEach(s => {
     const top = s.scrollTop;
     if (s.dataset.detail) { const i = byId(s.dataset.detail); if (!i) return; s.innerHTML = detailHTML(i); bindDetail(s, i); }
+    else if (s.dataset.person) { s.innerHTML = personSheetHTML(s.dataset.person); }
     else if (s.dataset.list) { const { title, list } = listFor(s.dataset.list); s.innerHTML = `${barHTML(title)}<div class="sh-body"><p class="hint">${list.length} titles</p>${gridHTML(list)}</div>`; }
     s.scrollTop = top;
   });
@@ -716,8 +840,8 @@ function detailHTML(i) {
     </div>
     <div class="blk"><h3>My rating</h3><div class="stars">${stars}<span class="val">${i.myRating ? i.myRating + ' / 10' : 'Not rated'}</span></div></div>
     ${i.genres && i.genres.length ? `<div class="blk"><h3>Category</h3><div class="chips">${i.genres.map(g => `<button class="chip" data-act="openList" data-key="genre:${esc(g)}">${esc(g)}</button>`).join('')}</div></div>` : ''}
-    ${i.director && i.director.length ? `<div class="blk"><h3>${isShow ? 'Created / directed by' : 'Director'}</h3><div class="chips">${i.director.map(p => `<button class="chip" data-act="person" data-name="${esc(p)}">${esc(p)}</button>`).join('')}</div></div>` : ''}
-    ${i.cast && i.cast.length ? `<div class="blk"><h3>Cast</h3><div class="chips">${i.cast.map((p, k) => `<button class="chip ${k < 2 ? 'ac' : ''}" data-act="person" data-name="${esc(p)}">${esc(p)}</button>`).join('')}</div></div>` : ''}
+    ${i.cast && i.cast.length ? `<div class="blk"><h3>Cast</h3><div class="avrow">${i.cast.map((p, k) => { const ci = (i.castInfo || []).find(c => c.name === p); return avatarHTML(p, ci && ci.photo, ci && ci.character, k < 2); }).join('')}</div>${i.tmdbId && !i.castInfo ? '<p class="hint">Tap “Update from internet” below to get their photos.</p>' : ''}</div>` : ''}
+    ${i.director && i.director.length ? `<div class="blk"><h3>${isShow ? 'Created / directed by' : 'Director'}</h3><div class="avrow">${i.director.map(p => { const di = (i.dirInfo || []).find(c => c.name === p); return avatarHTML(p, di && di.photo, '', false); }).join('')}</div></div>` : ''}
     ${i.plot ? `<div class="blk"><h3>Story</h3><p>${esc(i.plot)}</p></div>` : ''}
     ${isShow && i.seasons ? `<div class="blk"><h3>Progress</h3><p>Watched ${i.seasonsWatched || 0} of ${i.seasons} season${i.seasons > 1 ? 's' : ''}</p></div>` : ''}
     <div class="blk"><h3>Watch history</h3>${i.status === 'watched' ? `<p>Watched <strong>${i.watchCount || 1}</strong> time${(i.watchCount || 1) > 1 ? 's' : ''}</p>${(i.watchDates || []).length ? `<div class="hist" style="margin-top:6px">${i.watchDates.slice().sort().reverse().map(fmtDate).map(d => `<span class="chip">${d}</span>`).join('')}</div>` : ''}` : '<p class="hint">Not watched yet. It is on your “Want to watch” shelf.</p>'}</div>
@@ -869,8 +993,12 @@ async function fetchDetails(mt, id) {
   const countries = isMovie ? [...(d.origin_country || []), ...(d.production_countries || []).map(c => c.iso_3166_1)] : (d.origin_country || []);
   let lang = d.original_language || 'other'; if (lang === 'bn') lang = countries.includes('BD') ? 'bn-bd' : 'bn-in';
   const crew = (d.credits && d.credits.crew) || [];
-  let director = isMovie ? crew.filter(c => c.job === 'Director').map(c => c.name) : (d.created_by || []).map(c => c.name);
-  if (!director.length) director = crew.filter(c => c.job === 'Director').map(c => c.name);
+  let dirObjs = isMovie ? crew.filter(c => c.job === 'Director') : (d.created_by || []);
+  if (!dirObjs.length) dirObjs = crew.filter(c => c.job === 'Director');
+  dirObjs = dirObjs.filter((c, k, a) => a.findIndex(x => x.name === c.name) === k).slice(0, 3);
+  const director = dirObjs.map(c => c.name);
+  const prof = pp => pp ? 'https://image.tmdb.org/t/p/w185' + pp : '';
+  const castRaw = ((d.credits && d.credits.cast) || []).slice(0, 8);
   const bn = ((d.translations && d.translations.translations) || []).find(t => t.iso_639_1 === 'bn' && t.data && t.data.overview);
   const imdbId = isMovie ? d.imdb_id : (d.external_ids && d.external_ids.imdb_id);
   return {
@@ -879,7 +1007,9 @@ async function fetchDetails(mt, id) {
     year: date ? +date.slice(0, 4) : null, lang,
     genres: normGenres((d.genres || []).map(g => g.name)),
     director: [...new Set(director)].slice(0, 3),
-    cast: ((d.credits && d.credits.cast) || []).slice(0, 8).map(c => c.name),
+    cast: castRaw.map(c => c.name),
+    castInfo: castRaw.map(c => ({ name: c.name, id: c.id, character: c.character || '', photo: prof(c.profile_path) })),
+    dirInfo: dirObjs.map(c => ({ name: c.name, id: c.id, photo: prof(c.profile_path) })),
     runtime: isMovie ? (d.runtime || null) : ((d.episode_run_time || [])[0] || null),
     seasons: isMovie ? null : (d.number_of_seasons || null),
     plot: shortPlot(bn ? bn.data.overview : d.overview),
@@ -1150,7 +1280,7 @@ async function mgDelete(key, s) {
 function afterListChange(s) { renderManage(s); rerenderAll(); SHEETS.forEach(x => { if (x.dataset.arrange) renderArrange(x); }); }
 
 /* ---------------- backup / CSV ---------------- */
-function backupJSON() { return JSON.stringify({ app: 'MovieShelf', version: 1, exportedAt: new Date().toISOString(), settings: { types: S.types, langs: S.langs, genreList: S.genreList, theme: S.theme, font: S.font, shelves: S.shelves, pinned: S.pinned, mode: S.mode, zoom: S.zoom, tmdb: S.tmdb, omdb: S.omdb }, items: ITEMS }, null, 1); }
+function backupJSON() { return JSON.stringify({ app: 'MovieShelf', version: 1, exportedAt: new Date().toISOString(), settings: { types: S.types, langs: S.langs, genreList: S.genreList, theme: S.theme, font: S.font, shelves: S.shelves, pinned: S.pinned, mode: S.mode, zoom: S.zoom, tmdb: S.tmdb, omdb: S.omdb }, items: ITEMS, people: [...PEOPLE.values()] }, null, 1); }
 const stamp = () => today();
 async function deliver(name, text, mime, share) {
   const blob = new Blob([text], { type: mime });
@@ -1172,6 +1302,7 @@ async function restoreFrom(file) {
     const j = JSON.parse(await file.text());
     if (!j || !Array.isArray(j.items)) throw new Error('bad');
     const clean = j.items.filter(x => x && x.id && x.title);
+    if (Array.isArray(j.people)) { const pp = j.people.filter(x => x && x.name); await DB.tx(st => pp.forEach(x => st.put(x)), 'people'); pp.forEach(x => PEOPLE.set(x.name, x)); }
     await DB.putMany(clean);
     clean.forEach(it => { const k = ITEMS.findIndex(x => x.id === it.id); if (k >= 0) ITEMS[k] = it; else ITEMS.push(it); });
     const st = j.settings || {};
@@ -1206,8 +1337,17 @@ function examples() {
     E({ title: 'Oppenheimer', type: 'movie', year: 2023, lang: 'en', genres: ['History', 'Drama'], director: ['Christopher Nolan'], cast: ['Cillian Murphy', 'Emily Blunt', 'Robert Downey Jr.'], imdbRating: 8.3, runtime: 180, status: 'watchlist', spineColor: '#9c4a1a', added: '2026-10-20', plot: 'পারমাণবিক বোমা তৈরির প্রকল্পের প্রধান বিজ্ঞানী রবার্ট ওপেনহাইমারের জীবন আর তাঁর সিদ্ধান্তের ভার।' })
   ];
 }
-async function loadExamples() { const ex = examples().filter(e => !byId(e.id)); ex.forEach(e => ITEMS.push(e)); await DB.putMany(ex); LS.set('seeded', 1); rerenderAll(); }
-async function removeExamples() { const ex = ITEMS.filter(i => i.example); ITEMS = ITEMS.filter(i => !i.example); await DB.tx(s => ex.forEach(e => s.delete(e.id))); LS.set('seeded', 1); rerenderAll(); if (S.view === 'settings') renderSettings(); toast('Examples removed'); }
+const EX_PEOPLE = [
+  { name: 'Christopher Nolan', birthday: '1970-07-30', place: 'Westminster, London, England', dept: 'Directing', bio: 'British-American film director, writer and producer. Known for Memento, the Dark Knight trilogy, Inception, Interstellar and Oppenheimer, which won him the Academy Award for Best Director.' },
+  { name: 'Mohanlal', birthday: '1960-05-21', place: 'Elanthoor, Pathanamthitta, Kerala, India', dept: 'Acting', bio: 'Indian actor who works mainly in Malayalam cinema. He has acted in more than 350 films and received the Padma Bhushan in 2019.' },
+  { name: 'Leonardo DiCaprio', birthday: '1974-11-11', place: 'Los Angeles, California, USA', dept: 'Acting', bio: 'American actor and producer. He won the Academy Award for Best Actor for The Revenant (2015).' },
+  { name: 'Fahadh Faasil', birthday: '1982-08-08', place: 'Alappuzha, Kerala, India', dept: 'Acting', bio: 'Indian actor and producer in Malayalam cinema, son of director Fazil. Known for Kumbalangi Nights, Super Deluxe and Vikram.' },
+  { name: 'Kamal Haasan', birthday: '1954-11-07', place: 'Paramakudi, Tamil Nadu, India', dept: 'Acting', bio: 'Indian actor, filmmaker and politician who works mainly in Tamil cinema. He began as a child actor in Kalathur Kannamma (1960).' },
+  { name: 'Aamir Khan', birthday: '1965-03-14', place: 'Bombay (Mumbai), India', dept: 'Acting', bio: 'Indian actor and producer in Hindi cinema, known for Lagaan, 3 Idiots, PK and Dangal.' }
+];
+async function seedExamplePeople() { const add = EX_PEOPLE.filter(p => !PEOPLE.has(p.name)).map(p => Object.assign({ example: true }, p)); await DB.tx(st => add.forEach(x => st.put(x)), 'people'); add.forEach(x => PEOPLE.set(x.name, x)); }
+async function loadExamples() { await seedExamplePeople(); const ex = examples().filter(e => !byId(e.id)); ex.forEach(e => ITEMS.push(e)); await DB.putMany(ex); LS.set('seeded', 1); rerenderAll(); }
+async function removeExamples() { const exP = [...PEOPLE.values()].filter(x => x.example); exP.forEach(x => PEOPLE.delete(x.name)); await DB.tx(st => exP.forEach(x => st.delete(x.name)), 'people'); const ex = ITEMS.filter(i => i.example); ITEMS = ITEMS.filter(i => !i.example); await DB.tx(s => ex.forEach(e => s.delete(e.id))); LS.set('seeded', 1); rerenderAll(); if (S.view === 'settings') renderSettings(); toast('Examples removed'); }
 
 /* ---------------- toast ---------------- */
 let toastT; function toast(m) { const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2400); }
@@ -1228,6 +1368,10 @@ const ACT = {
   mode: b => { S.mode = b.dataset.m; LS.set('mode', S.mode); renderHome(); },
   zoom: b => setZoom(S.zoom + (+b.dataset.d) * .1),
   arrange: () => openArrange(),
+  bioMore: b => { const p = $('#bio', sheetOf(b)); p.classList.toggle('open'); b.textContent = p.classList.contains('open') ? 'Show less' : 'Read more'; },
+  personEdit: b => openPersonEdit(b.dataset.name),
+  personRefresh: b => ensurePerson(b.dataset.name, true),
+  kfAdd: b => addKnown(b),
   manage: b => openManage(b.dataset.tab),
   mgTab: b => { MG = { tab: b.dataset.tab, edit: null, del: null }; renderManage(sheetOf(b)); },
   mgEdit: b => { MG.edit = b.dataset.key; MG.del = null; renderManage(sheetOf(b)); },
@@ -1237,7 +1381,7 @@ const ACT = {
   back: () => closeSheet(),
   openList: b => openList(b.dataset.key),
   person: b => openPerson(b.dataset.name),
-  pin: b => { const n = b.dataset.name; S.pinned = S.pinned.includes(n) ? S.pinned.filter(x => x !== n) : S.pinned.concat(n); LS.set('pinned', S.pinned); S.shelves.hidden = S.shelves.hidden.filter(k => k !== 'person:' + n); saveShelves(); toast(S.pinned.includes(n) ? 'Shelf added to home' : 'Shelf removed'); closeSheet(); openPerson(n); renderHome(); },
+  pin: b => { const n = b.dataset.name; S.pinned = S.pinned.includes(n) ? S.pinned.filter(x => x !== n) : S.pinned.concat(n); LS.set('pinned', S.pinned); S.shelves.hidden = S.shelves.hidden.filter(k => k !== 'person:' + n); saveShelves(); toast(S.pinned.includes(n) ? 'Shelf added to home' : 'Shelf removed'); redrawPerson(n); renderHome(); },
   fav: async () => { const i = currentDetail(); i.favorite = !i.favorite; await saveItem(i); rerenderAll(); },
   status: async () => { const i = currentDetail(); if (i.status === 'watched') { i.status = 'watchlist'; } else { i.status = 'watched'; if (!i.watchCount) { i.watchCount = 1; i.watchDates = [today()]; } } await saveItem(i); rerenderAll(); },
   again: async () => { const i = currentDetail(); if (i.status !== 'watched') { i.status = 'watched'; i.watchCount = 1; i.watchDates = [today()]; } else { i.watchCount = (i.watchCount || 1) + 1; i.watchDates = (i.watchDates || []).concat(today()); } await saveItem(i); rerenderAll(); toast(`Watched ${i.watchCount} time${i.watchCount > 1 ? 's' : ''}`); },
@@ -1290,7 +1434,9 @@ $('#restoreFile').addEventListener('change', e => { const f = e.target.files[0];
   applyLook();
   await DB.open();
   ITEMS = await DB.all();
-  if (!ITEMS.length && !LS.get('seeded', 0)) { ITEMS = examples(); await DB.putMany(ITEMS); LS.set('seeded', 1); }
+  (await DB.all('people')).forEach(x => PEOPLE.set(x.name, x));
+  if (!ITEMS.length && !LS.get('seeded', 0)) { ITEMS = examples(); await DB.putMany(ITEMS); await seedExamplePeople(); LS.set('seeded', 1); }
+  else if (ITEMS.some(i => i.example)) await seedExamplePeople();
   showView('home');
   if (!FRAMED && 'serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 })();
